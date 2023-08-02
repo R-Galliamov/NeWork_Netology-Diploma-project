@@ -3,6 +3,7 @@ package ru.netology.nework.dto
 data class Post(
     val id: Int,
     val authorId: Int,
+    val authorName: String = "",
     val authorAvatar: String? = null,
     val authorJob: String? = null,
     val content: String,

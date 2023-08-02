@@ -49,6 +49,10 @@ dependencies {
     def lifecycle_version = "2.6.1"
     def fragment_version = "1.6.1"
     def room_version = "2.5.2"
+    def mdc_version = "1.6.1"
+
+    //Material design
+    implementation "com.google.android.material:material:$mdc_version"
 
     //Room
     implementation "androidx.room:room-runtime:$room_version"

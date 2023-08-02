@@ -6,7 +6,7 @@ class Converters {
 
     @TypeConverter
     fun fromString(value: String): List<Int> {
-        return value.split(",").map { it.toInt() }
+        return value.split(",").filter { it.isNotBlank() }.map { it.toInt() }
     }
 
     @TypeConverter

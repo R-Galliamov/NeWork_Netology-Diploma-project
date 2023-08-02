@@ -11,6 +11,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.Token
+import ru.netology.nework.dto.User
 
 private const val BASE_URL = "https://netomedia.ru/"
 
@@ -31,6 +32,9 @@ fun retrofit(client: OkHttpClient): Retrofit = Retrofit.Builder()
 interface ApiService {
     @GET("api/posts/")
     suspend fun getAllPosts(): Response<List<Post>>
+
+    @GET("api/users/")
+    suspend fun getAllUsers(): Response<List<User>>
 
     @FormUrlEncoded
     @POST("api/users/authentication/")

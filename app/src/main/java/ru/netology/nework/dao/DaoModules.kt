@@ -8,7 +8,10 @@ import ru.netology.nework.db.AppDb
 
 @InstallIn(SingletonComponent::class)
 @Module
-object DaoModule {
+object DaoModules {
     @Provides
     fun providePostDao(db: AppDb): PostDao = db.postDao()
+
+    @Provides
+    fun provideUserDao(db: AppDb): UserDao = db.userDao()
 }

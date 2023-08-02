@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="10dp">
+    android:paddingEnd="20dp"
+    android:paddingStart="20dp"
+    android:paddingBottom="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,10 +26,10 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
+                android:id="@+id/date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                android:id="@+id/date"
                 android:textSize="12dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -39,9 +41,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:textColor="@color/black"
+                app:layout_constraintEnd_toStartOf="@id/date"
                 app:layout_constraintStart_toEndOf="@id/authorAvatar"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/date"
                 tools:text="Author Name" />
 
             <TextView
@@ -58,12 +60,12 @@
             android:id="@+id/imageAttachment"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:visibility="gone"
             android:layout_marginTop="4dp"
-            android:src="@color/black" />
+            android:src="@color/black"
+            android:visibility="gone" />
 
         <TextView
-            android:id="@+id/text"
+            android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -92,6 +94,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/coordsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
@@ -133,23 +136,17 @@
 
         </LinearLayout>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:orientation="horizontal">
 
             <ImageView
+                android:id="@+id/like"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="start"
-
+                android:checkable="true"
                 android:clickable="true"
-                android:src="@drawable/like_selector_icon"
+                android:src="@drawable/like_unchecked"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 </LinearLayout>
