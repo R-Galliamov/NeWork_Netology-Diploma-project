@@ -16,6 +16,9 @@ interface PostDao {
     @Upsert
     suspend fun upsertPost(post: PostEntity)
 
+    @Upsert
+    suspend fun upsertPost(posts: List<PostEntity>)
+
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun deletePostById(id: Int)
 }

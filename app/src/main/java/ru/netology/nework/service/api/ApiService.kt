@@ -9,8 +9,8 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
-import ru.netology.nework.model.Post
-import ru.netology.nework.model.Token
+import ru.netology.nework.dto.Post
+import ru.netology.nework.dto.Token
 
 private const val BASE_URL = "https://netomedia.ru/"
 

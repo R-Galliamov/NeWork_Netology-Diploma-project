@@ -6,7 +6,7 @@ import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import ru.netology.nework.auth.AppAuth
-import ru.netology.nework.model.Token
+import ru.netology.nework.dto.Token
 import javax.inject.Inject
 
 @HiltViewModel

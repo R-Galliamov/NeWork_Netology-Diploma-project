@@ -1,4 +1,4 @@
-package ru.netology.nework.model
+package ru.netology.nework.error
 
 import java.io.IOException
 import java.lang.RuntimeException
@@ -7,7 +7,6 @@ import java.sql.SQLException
 data class Error(
     val reason: String,
 )
-
 
 sealed class AppError(var code: String) : RuntimeException() {
     companion object {

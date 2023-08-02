@@ -1,4 +1,4 @@
-package ru.netology.nework.model
+package ru.netology.nework.dto
 
 
 data class Attachment(

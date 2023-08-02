@@ -8,7 +8,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import ru.netology.nework.model.Token
+import ru.netology.nework.dto.Token
 import ru.netology.nework.service.api.ApiService
 import javax.inject.Inject
 import javax.inject.Singleton

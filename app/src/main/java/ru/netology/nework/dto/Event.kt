@@ -1,6 +1,6 @@
-package ru.netology.nework.model
+package ru.netology.nework.dto
 
-data class EventResponse(
+data class Event(
     val id: Int,
     val authorId: Int,
     val authorAvatar: String,
@@ -26,13 +26,4 @@ data class EventResponse(
     }
 }
 
-data class EventCreateRequest(
-    val id: Int,
-    val content: String,
-    val dateTime: String,
-    val coords: Coordinates,
-    val type: EventResponse.Type,
-    val attachment: Attachment,
-    val link: String,
-    val speakersId: List<Int>,
-)
+

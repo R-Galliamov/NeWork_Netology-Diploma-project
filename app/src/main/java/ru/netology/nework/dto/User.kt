@@ -1,6 +1,6 @@
-package ru.netology.nework.model
+package ru.netology.nework.dto
 
-data class UserResponse(
+data class User(
     val id: Int,
     val login: String,
     val name: String,

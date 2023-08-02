@@ -11,7 +11,11 @@ import javax.inject.Inject
 class PostViewModel @Inject constructor(private val postRepository: PostRepository) :
     ViewModel() {
 
-    fun loadPosts(){
+    init {
+        loadPosts()
+    }
+
+    fun loadPosts() {
         viewModelScope.launch {
             postRepository.getAll()
         }
