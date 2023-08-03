@@ -5,10 +5,12 @@ import okhttp3.OkHttpClient
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.Token
 import ru.netology.nework.dto.User
@@ -32,6 +34,12 @@ fun retrofit(client: OkHttpClient): Retrofit = Retrofit.Builder()
 interface ApiService {
     @GET("api/posts/")
     suspend fun getAllPosts(): Response<List<Post>>
+
+    @POST("api/posts/{id}/likes/")
+    suspend fun likeById(@Path("id") id: Int): Response<Post>
+
+    @DELETE("api/posts/{id}/likes")
+    suspend fun dislikeById(@Path("id") id: Int): Response<Post>
 
     @GET("api/users/")
     suspend fun getAllUsers(): Response<List<User>>

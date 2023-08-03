@@ -11,11 +11,15 @@ import ru.netology.nework.databinding.PostItemBinding
 import ru.netology.nework.dto.Post
 import ru.netology.nework.view.loadCircleCropAvatar
 
-class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
+class PostAdapter(private val onInteractionListener: OnInteractionListener) :
+    ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
+
+    interface OnInteractionListener {
+        fun onLike(post: Post)
+    }
 
     inner class PostViewHolder(private val binding: PostItemBinding) : ViewHolder(binding.root) {
         fun bind(post: Post) {
-
             binding.apply {
                 authorName.text = post.authorId.toString()
                 authorJob.text = post.authorJob ?: ""
@@ -32,10 +36,13 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallba
                 var likedByMe = post.likedByMe
                 updateLikeUi(likedByMe)
                 like.setOnClickListener {
-                    likedByMe = !likedByMe
-                    updateLikeUi(likedByMe)
+                    //TODO check if data updates when like clicked
+                    //likedByMe = !likedByMe
+                    //updateLikeUi(likedByMe)
+                    onInteractionListener.onLike(post)
                 }
                 authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
+                date.text = post.published
             }
         }
 

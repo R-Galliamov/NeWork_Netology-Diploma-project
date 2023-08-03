@@ -7,4 +7,5 @@ interface PostRepository {
     val data: Flow<List<Post>>
 
     suspend fun getAll()
+    suspend fun onLike(post: Post)
 }

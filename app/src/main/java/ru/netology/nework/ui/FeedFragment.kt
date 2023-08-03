@@ -4,11 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nework.adapter.PostAdapter
 import ru.netology.nework.databinding.FragmentFeedBinding
+import ru.netology.nework.dto.Post
 import ru.netology.nework.viewModel.FeedViewModel
 
 @AndroidEntryPoint
@@ -31,11 +33,21 @@ class FeedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = PostAdapter()
+        val adapter = PostAdapter(object : PostAdapter.OnInteractionListener {
+            override fun onLike(post: Post) {
+                viewModel.onLike(post)
+            }
+
+        })
         val recyclerView = binding.recyclerView
         recyclerView.adapter = adapter
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
             adapter.submitList(posts)
+        }
+
+        viewModel.errorLiveData.observe(viewLifecycleOwner) { error ->
+            Toast.makeText(requireContext(), error.status.toString(), Toast.LENGTH_SHORT).show()
+            //TODO create error handler
         }
     }
 
