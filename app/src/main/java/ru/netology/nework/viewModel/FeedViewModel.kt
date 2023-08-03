@@ -25,8 +25,9 @@ class FeedViewModel @Inject constructor(
         combine(postRepository.data, userRepository.data) { posts, users ->
             posts.map { post ->
                 post.copy(
-                    authorName = users.findLast { it.id == post.authorId }?.name
-                        ?: "Author Name"
+                    authorName = users.findLast { user -> user.id == post.authorId }?.name
+                        ?: "Author name",
+                    mentionUsers = users.filter { user -> post.mentionIds.contains(user.id) }
                 )
             }
         }.asLiveData()

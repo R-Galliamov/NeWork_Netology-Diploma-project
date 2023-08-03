@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import ru.netology.nework.R
 import ru.netology.nework.databinding.PostItemBinding
 import ru.netology.nework.dto.Post
+import ru.netology.nework.view.loadCircleCropAvatar
 
 class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
@@ -22,7 +23,7 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallba
                 content.text = post.content
                 link.text = post.link.orEmpty()
                 coords.text = post.coords.let { "${it?.lat} : ${it?.long}" }
-                mentioned.text = post.mentionIds.joinToString(", ")
+                mention.text = post.mentionUsers.joinToString(", ") { it.name }
                 linkContainer.visibility =
                     if (post.link.isNullOrBlank()) View.GONE else View.VISIBLE
                 coordsContainer.visibility = if (post.coords == null) View.GONE else View.VISIBLE
@@ -34,6 +35,7 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallba
                     likedByMe = !likedByMe
                     updateLikeUi(likedByMe)
                 }
+                authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
             }
         }
 
