@@ -2,8 +2,7 @@ package ru.netology.nework.converters
 
 import androidx.room.TypeConverter
 
-class Converters {
-
+class GsonConverters {
     @TypeConverter
     fun fromString(value: String): List<Int> {
         return value.split(",").filter { it.isNotBlank() }.map { it.toInt() }

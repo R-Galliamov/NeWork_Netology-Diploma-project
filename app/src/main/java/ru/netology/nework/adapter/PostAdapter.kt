@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import ru.netology.nework.R
+import ru.netology.nework.converters.DateTimeConverter
 import ru.netology.nework.databinding.PostItemBinding
 import ru.netology.nework.dto.Post
 import ru.netology.nework.view.loadCircleCropAvatar
@@ -42,7 +43,8 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
                     onInteractionListener.onLike(post)
                 }
                 authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
-                date.text = post.published
+                date.text = DateTimeConverter.toUIDate(post.published)
+                time.text = DateTimeConverter.toUiTime(post.published)
             }
         }
 

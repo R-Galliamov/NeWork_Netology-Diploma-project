@@ -31,11 +31,32 @@
                 android:id="@+id/date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:textSize="12dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginEnd="8dp"
+                app:layout_constraintEnd_toStartOf="@id/menu"
+                app:layout_constraintTop_toTopOf="@id/authorName"
                 tools:text="Yesterday" />
+
+            <TextView
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12dp"
+                app:layout_constraintEnd_toEndOf="@id/date"
+                app:layout_constraintTop_toBottomOf="@id/date"
+                tools:text="12:05" />
+
+            <ImageView
+                android:id="@+id/menu"
+                android:layout_width="14dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:clickable="true"
+                android:src="@drawable/post_menu_icon"
+                app:layout_constraintBottom_toBottomOf="@+id/time"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/date" />
+
 
             <TextView
                 android:id="@+id/authorName"
@@ -89,9 +110,9 @@
 
             <TextView
                 android:id="@+id/link"
-                android:layout_marginStart="4dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
                 tools:text="Link" />
 
         </LinearLayout>
@@ -112,9 +133,9 @@
 
             <TextView
                 android:id="@+id/coords"
-                android:layout_marginStart="4dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
                 tools:text="Lat : Long" />
         </LinearLayout>
 
@@ -134,9 +155,9 @@
 
             <TextView
                 android:id="@+id/mention"
-                android:layout_marginStart="4dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
                 tools:text="Mentioned User, Mentioned User" />
         </LinearLayout>
 
