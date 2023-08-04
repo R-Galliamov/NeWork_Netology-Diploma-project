@@ -38,7 +38,7 @@ class HolderFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.bar_menu, menu)
-        toolbar = requireActivity().findViewById(R.id.toolbar)
+        toolbar = binding.toolbar as Toolbar
         badge = BadgeDrawable.create(requireContext())
         BadgeUtils.attachBadgeDrawable(badge, toolbar, R.id.notification_badge)
     }
