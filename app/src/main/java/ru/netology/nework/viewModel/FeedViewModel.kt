@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nework.dto.Post
+import ru.netology.nework.dto.UserPreview
 import ru.netology.nework.error.ApiError
 import ru.netology.nework.repository.PostRepository
 import ru.netology.nework.repository.UserRepository
@@ -23,16 +24,16 @@ class FeedViewModel @Inject constructor(
 ) :
     ViewModel() {
 
-    val posts: LiveData<List<Post>> =
-        combine(postRepository.data, userRepository.data) { posts, users ->
-            posts.map { post ->
-                post.copy(
-                    authorName = users.findLast { user -> user.id == post.authorId }?.name
-                        ?: "Author name",
-                    mentionUsers = users.filter { user -> post.mentionIds.contains(user.id) }
-                )
-            }
-        }.asLiveData()
+    val posts: LiveData<List<Post>> = postRepository.data.map { posts ->
+        posts.map { post ->
+            val mentionUsers =
+                post.users.filterKeys { it.toIntOrNull() in post.mentionIds }.values.toList()
+            post.copy(
+                mentionUsers = mentionUsers
+            )
+        }
+
+    }.asLiveData()
 
     private var _errorLiveData: MutableLiveData<ApiError> = MutableLiveData()
     val errorLiveData: MutableLiveData<ApiError>

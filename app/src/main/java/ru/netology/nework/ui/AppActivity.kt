@@ -15,7 +15,5 @@ class AppActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityAppBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_place_holder, FeedFragment()).commit()
     }
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/holderFragment">
+
+    <fragment
+        android:id="@+id/holderFragment"
+        android:name="ru.netology.nework.ui.HolderFragment"
+        android:label="HolderFragment">
+        <action
+            android:id="@+id/action_holderFragment_to_newPostFragment"
+            app:destination="@id/newPostFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/newPostFragment"
+        android:name="ru.netology.nework.ui.NewPostFragment"
+        android:label="NewPostFragment" />
+</navigation>

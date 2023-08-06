@@ -3,7 +3,7 @@ package ru.netology.nework.dto
 data class Post(
     val id: Int,
     val authorId: Int,
-    val authorName: String = "",
+    val author: String,
     val authorAvatar: String? = null,
     val authorJob: String? = null,
     val content: String,
@@ -12,7 +12,7 @@ data class Post(
     val link: String? = null,
     val likeOwnerIds: List<Int>,
     val mentionIds: List<Int>,
-    val mentionUsers: List<User> = emptyList(),
+    val mentionUsers: List<UserPreview> = emptyList(),
     val mentionedMe: Boolean = false,
     val likedByMe: Boolean = false,
     val attachment: Attachment? = null,

@@ -24,7 +24,7 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
             binding.apply {
                 authorName.text = post.authorId.toString()
                 authorJob.text = post.authorJob ?: ""
-                authorName.text = post.authorName
+                authorName.text = post.author
                 content.text = post.content
                 link.text = post.link.orEmpty()
                 coords.text = post.coords.let { "${it?.lat} : ${it?.long}" }

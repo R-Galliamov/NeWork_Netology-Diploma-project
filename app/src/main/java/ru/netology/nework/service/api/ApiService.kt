@@ -11,6 +11,7 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.Token
 import ru.netology.nework.dto.User
@@ -32,6 +33,8 @@ fun retrofit(client: OkHttpClient): Retrofit = Retrofit.Builder()
     .build()
 
 interface ApiService {
+
+    //Posts
     @GET("api/posts/")
     suspend fun getAllPosts(): Response<List<Post>>
 
@@ -41,6 +44,11 @@ interface ApiService {
     @DELETE("api/posts/{id}/likes")
     suspend fun dislikeById(@Path("id") id: Int): Response<Post>
 
+    //Events
+    @GET("api/events/")
+    suspend fun getAllEvents(): Response<List<Event>>
+
+    //Users
     @GET("api/users/")
     suspend fun getAllUsers(): Response<List<User>>
 

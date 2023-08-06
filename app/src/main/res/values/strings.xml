@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">NeWork</string>
+    <string name="add_post">Add post</string>
+    <string name="add_event">Add event</string>
 </resources>

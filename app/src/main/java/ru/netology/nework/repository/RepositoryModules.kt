@@ -16,4 +16,8 @@ abstract class RepositoryModules {
     @Binds
     @Singleton
     abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindEventRepository(impl: EventRepositoryImpl): EventRepository
 }
