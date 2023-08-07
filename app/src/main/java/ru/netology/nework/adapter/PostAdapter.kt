@@ -7,11 +7,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import ru.netology.nework.R
+import ru.netology.nework.USER_AVATARS
 import ru.netology.nework.converters.DateTimeConverter
 import ru.netology.nework.databinding.PostItemBinding
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
 import ru.netology.nework.view.loadCircleCropAvatar
+import kotlin.random.Random
 
 class PostAdapter(private val onInteractionListener: OnInteractionListener) :
     ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
@@ -43,7 +45,12 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
                     //updateLikeUi(likedByMe)
                     onInteractionListener.onLike(post)
                 }
-                authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
+                if (post.authorAvatar.isNullOrBlank()) {
+                    val index = Random.nextInt(USER_AVATARS.size)
+                    authorAvatar.setImageResource(USER_AVATARS[index])
+                } else {
+                    authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
+                }
                 date.text = DateTimeConverter.publishedToUIDate(post.published)
                 time.text = DateTimeConverter.publishedToUiTime(post.published)
             }
