@@ -13,8 +13,8 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.Post
-import ru.netology.nework.dto.Token
 import ru.netology.nework.dto.User
+import ru.netology.nework.dto.Token
 
 private const val BASE_URL = "https://netomedia.ru/"
 

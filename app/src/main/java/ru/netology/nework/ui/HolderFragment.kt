@@ -34,6 +34,7 @@ class HolderFragment : Fragment() {
         return binding.root
     }
 
+    @ExperimentalBadgeUtils
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.toolbar.setOnMenuItemClickListener { menuItem ->
@@ -62,30 +63,23 @@ class HolderFragment : Fragment() {
                     true
                 }
 
+                R.id.users -> {
+                    childFragmentManager.beginTransaction()
+                        .replace(R.id.place_holder, UsersFragment()).commit()
+                    true
+                }
+
                 else -> false
             }
         }
 
-        //TODO handle the returning from fullscreen fragments
-        childFragmentManager.beginTransaction().replace(R.id.place_holder, FeedFragment()).commit()
-    }
 
-    @ExperimentalBadgeUtils
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.bar_menu, menu)
         badge = BadgeDrawable.create(requireContext())
         badge.number = 10
         BadgeUtils.attachBadgeDrawable(badge, binding.toolbar, R.id.notification_badge)
-    }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.notification_badge -> {
-                true
-            }
-
-            else -> super.onOptionsItemSelected(item)
-        }
+        //TODO handle the returning from fullscreen fragments
+        childFragmentManager.beginTransaction().replace(R.id.place_holder, FeedFragment()).commit()
     }
 
     private fun showCreateContentPopupMenu(view: View) {

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="20dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/authorAvatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:clickable="true"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:src="@drawable/user_icon" />
+
+            <TextView
+                android:id="@+id/date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:textSize="12dp"
+                app:layout_constraintEnd_toStartOf="@id/menu"
+                app:layout_constraintTop_toTopOf="@id/authorName"
+                tools:text="Yesterday" />
+
+            <TextView
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12dp"
+                app:layout_constraintEnd_toEndOf="@id/date"
+                app:layout_constraintTop_toBottomOf="@id/date"
+                tools:text="12:05" />
+
+            <ImageView
+                android:id="@+id/menu"
+                android:layout_width="14dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:clickable="true"
+                android:src="@drawable/post_menu_icon"
+                app:layout_constraintBottom_toBottomOf="@+id/time"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/date" />
+
+
+            <TextView
+                android:id="@+id/authorName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/black"
+                app:layout_constraintEnd_toStartOf="@id/date"
+                app:layout_constraintStart_toEndOf="@id/authorAvatar"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Author Name" />
+
+            <TextView
+                android:id="@+id/authorJob"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="@id/authorName"
+                app:layout_constraintTop_toBottomOf="@id/authorName"
+                tools:text="Author's job" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            android:id="@+id/imageAttachment"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="4dp"
+            android:src="@color/black"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/black"
+            tools:text="Some text for test" />
+
+        <LinearLayout
+            android:id="@+id/linkContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/link_icon" />
+
+            <TextView
+                android:id="@+id/link"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                tools:text="Link" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/datetimeContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:padding="3dp"
+                android:src="@drawable/events_icon" />
+
+            <TextView
+                android:id="@+id/datetime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                tools:text="Tomorrow, 20:00" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/coordsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:padding="3dp"
+                android:src="@drawable/pin_icon" />
+
+            <TextView
+                android:id="@+id/coords"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                tools:text="Lat : Long" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/speakersContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:padding="2dp"
+                android:src="@drawable/speakers_icon" />
+
+            <TextView
+                android:id="@+id/speakers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                tools:text="Speaker User, Speaker User" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/participantsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:padding="2dp"
+                android:src="@drawable/users_icon" />
+
+            <TextView
+                android:id="@+id/participants"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                tools:text="Participant User, Participant User" />
+        </LinearLayout>
+
+
+        <ImageView
+            android:id="@+id/like"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="start"
+            android:layout_marginTop="4dp"
+            android:checkable="true"
+            android:src="@drawable/like_unchecked"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </LinearLayout>
+</LinearLayout>

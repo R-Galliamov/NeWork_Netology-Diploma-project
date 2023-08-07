@@ -1,12 +1,12 @@
 package ru.netology.nework.repository
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import ru.netology.nework.dao.PostDao
 import ru.netology.nework.dto.Post
+import ru.netology.nework.dto.User
 import ru.netology.nework.entity.PostEntity
 import ru.netology.nework.entity.toDto
 import ru.netology.nework.entity.toEntity
@@ -15,7 +15,6 @@ import ru.netology.nework.error.NetworkError
 import ru.netology.nework.error.UnknownError
 import ru.netology.nework.service.api.ApiService
 import java.io.IOException
-import java.lang.Exception
 import javax.inject.Inject
 import javax.inject.Singleton
 

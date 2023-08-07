@@ -8,9 +8,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import dagger.hilt.android.AndroidEntryPoint
+import ru.netology.nework.adapter.EventAdapter
 import ru.netology.nework.adapter.PostAdapter
 import ru.netology.nework.databinding.FragmentFeedBinding
 import ru.netology.nework.dto.Post
+import ru.netology.nework.dto.User
 import ru.netology.nework.viewModel.FeedViewModel
 
 @AndroidEntryPoint

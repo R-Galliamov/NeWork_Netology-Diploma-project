@@ -10,6 +10,7 @@ import ru.netology.nework.R
 import ru.netology.nework.converters.DateTimeConverter
 import ru.netology.nework.databinding.PostItemBinding
 import ru.netology.nework.dto.Post
+import ru.netology.nework.dto.User
 import ru.netology.nework.view.loadCircleCropAvatar
 
 class PostAdapter(private val onInteractionListener: OnInteractionListener) :
@@ -43,8 +44,8 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
                     onInteractionListener.onLike(post)
                 }
                 authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
-                date.text = DateTimeConverter.toUIDate(post.published)
-                time.text = DateTimeConverter.toUiTime(post.published)
+                date.text = DateTimeConverter.publishedToUIDate(post.published)
+                time.text = DateTimeConverter.publishedToUiTime(post.published)
             }
         }
 
