@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="ui.AuthFragment">
+
+    <ImageView
+        android:id="@+id/cancel_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:src="@drawable/cross_icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/done_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/done_icon"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <LinearLayout
+        android:id="@+id/authDataContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/processText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/authentication"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/avatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:src="@drawable/user_black_icon"
+            android:visibility="gone" />
+
+
+        <EditText
+            android:id="@+id/user_name"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/name"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@id/processText"
+            app:layout_constraintStart_toStartOf="@id/processText"
+            app:layout_constraintTop_toBottomOf="@id/processText" />
+
+        <EditText
+            android:id="@+id/login"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/login"
+            app:layout_constraintEnd_toEndOf="@id/processText"
+            app:layout_constraintStart_toStartOf="@id/processText"
+            app:layout_constraintTop_toBottomOf="@id/processText" />
+
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/password"
+            android:inputType="textPassword"
+            app:layout_constraintEnd_toEndOf="@id/processText"
+            app:layout_constraintStart_toStartOf="@id/processText"
+            app:layout_constraintTop_toBottomOf="@id/login" />
+
+        <TextView
+            android:id="@+id/error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FF0000"
+            android:visibility="gone"
+            tools:text="Error" />
+
+        <Button
+            android:id="@+id/send_data_button"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/button_green"
+            android:text="@string/sign_in"
+            android:textAllCaps="false"
+            android:textSize="12dp"
+            app:layout_constraintEnd_toEndOf="@id/processText"
+            app:layout_constraintStart_toStartOf="@id/processText"
+            app:layout_constraintTop_toBottomOf="@+id/password" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/or"
+            android:textColor="@color/gray"
+            app:layout_constraintEnd_toEndOf="@id/processText"
+            app:layout_constraintStart_toStartOf="@id/processText"
+            app:layout_constraintTop_toBottomOf="@id/send_data_button" />
+
+        <TextView
+            android:id="@+id/toggle_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:clickable="true"
+            android:text="@string/sign_up"
+            android:textColor="@color/green_600"
+            app:layout_constraintEnd_toEndOf="@id/processText"
+            app:layout_constraintStart_toStartOf="@id/processText"
+            app:layout_constraintTop_toBottomOf="@id/send_data_button" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

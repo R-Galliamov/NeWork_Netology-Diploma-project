@@ -6,13 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import ru.netology.nework.R
 import ru.netology.nework.adapter.EventAdapter
 import ru.netology.nework.adapter.UserAdapter
 import ru.netology.nework.databinding.FragmentEventsBinding
 import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.User
+import ru.netology.nework.viewModel.AuthViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 
 @AndroidEntryPoint
@@ -36,8 +39,10 @@ class UsersFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val adapter = UserAdapter(object : UserAdapter.OnInteractionListener {
-            override fun onLike(user: User) {
-
+            override fun onItem(user: User) {
+                viewModel.setCurrentUser(user)
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.place_holder, UserProfileFragment()).commit()
             }
         })
         val recyclerView = binding.recyclerView
@@ -46,6 +51,7 @@ class UsersFragment : Fragment() {
         viewModel.users.observe(viewLifecycleOwner) { users ->
             adapter.submitList(users)
         }
+
 
         //viewModel.errorLiveData.observe(viewLifecycleOwner) { error ->
         //    Toast.makeText(requireContext(), error.status.toString(), Toast.LENGTH_SHORT).show()

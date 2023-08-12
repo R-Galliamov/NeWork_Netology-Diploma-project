@@ -1,4 +1,4 @@
-package ru.netology.nework.requestModel
+package ru.netology.nework.model.requestModel
 
 data class AuthenticationRequest(
     val login: String,

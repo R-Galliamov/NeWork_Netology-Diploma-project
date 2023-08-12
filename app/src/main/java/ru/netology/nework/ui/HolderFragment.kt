@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
@@ -17,6 +18,9 @@ import com.google.android.material.badge.ExperimentalBadgeUtils
 import okhttp3.internal.checkOffsetAndCount
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentHolderBinding
+import ru.netology.nework.view.loadCircleCropAvatar
+import ru.netology.nework.viewModel.AuthViewModel
+import ru.netology.nework.viewModel.UsersViewModel
 
 class HolderFragment : Fragment() {
     private var _binding: FragmentHolderBinding? = null
@@ -24,6 +28,8 @@ class HolderFragment : Fragment() {
         get() = _binding!!
 
     private lateinit var badge: BadgeDrawable
+    private val authViewModel: AuthViewModel by activityViewModels()
+    private val usersViewModel: UsersViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,6 +79,19 @@ class HolderFragment : Fragment() {
             }
         }
 
+        authViewModel.authenticatedUser.observe(viewLifecycleOwner) { user ->
+            if (user != null) {
+                binding.avatar.loadCircleCropAvatar(user.avatar.toString())
+                binding.avatar.setOnClickListener {
+                    usersViewModel.setCurrentUser(user)
+                    findNavController().navigate(R.id.action_holderFragment_to_userProfileFragment)
+                }
+            } else {
+                binding.avatar.setOnClickListener {
+                    findNavController().navigate(R.id.action_holderFragment_to_authFragment)
+                }
+            }
+        }
 
         badge = BadgeDrawable.create(requireContext())
         badge.number = 10

@@ -1,4 +1,4 @@
-package ru.netology.nework.requestModel
+package ru.netology.nework.model.requestModel
 
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Coordinates

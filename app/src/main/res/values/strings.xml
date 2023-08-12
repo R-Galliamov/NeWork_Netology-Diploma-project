@@ -3,4 +3,13 @@
     <string name="add_post">Add post</string>
     <string name="add_event">Add event</string>
     <string name="job_preview">%s at %s</string>
+    <string name="login">login</string>
+    <string name="password">password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="name">name</string>
+    <string name="authentication">Authentication</string>
+    <string name="registration">Registration</string>
+    <string name="sign_up">Sign up</string>
+    <string name="or">or</string>
+    <string name="fields_shouldn_t_be_empty">Fields shouldn\'t be empty</string>
 </resources>

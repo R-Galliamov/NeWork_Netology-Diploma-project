@@ -1,15 +1,11 @@
 package ru.netology.nework.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import ru.netology.nework.R
 import ru.netology.nework.USER_AVATARS
-import ru.netology.nework.converters.DateTimeConverter
-import ru.netology.nework.databinding.PostItemBinding
 import ru.netology.nework.databinding.UserItemBinding
 import ru.netology.nework.dto.User
 import ru.netology.nework.view.loadCircleCropAvatar
@@ -19,7 +15,7 @@ class UserAdapter(private val onInteractionListener: OnInteractionListener) :
     ListAdapter<User, UserAdapter.UserViewHolder>(UserDiffCallback()) {
 
     interface OnInteractionListener {
-        fun onLike(user: User)
+        fun onItem(user: User)
     }
 
     inner class UserViewHolder(private val binding: UserItemBinding) : ViewHolder(binding.root) {
@@ -34,7 +30,9 @@ class UserAdapter(private val onInteractionListener: OnInteractionListener) :
                 author.text = user.name
                 login.text = "@${user.login}"
             }
-
+            itemView.setOnClickListener {
+                onInteractionListener.onItem(getItem(adapterPosition))
+            }
         }
     }
 

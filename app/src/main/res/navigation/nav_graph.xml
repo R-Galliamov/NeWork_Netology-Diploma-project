@@ -11,9 +11,23 @@
         <action
             android:id="@+id/action_holderFragment_to_newPostFragment"
             app:destination="@id/newPostFragment" />
+        <action
+            android:id="@+id/action_holderFragment_to_authFragment"
+            app:destination="@id/authFragment" />
+        <action
+            android:id="@+id/action_holderFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
     </fragment>
     <fragment
         android:id="@+id/newPostFragment"
         android:name="ru.netology.nework.ui.NewPostFragment"
         android:label="NewPostFragment" />
+    <fragment
+        android:id="@+id/authFragment"
+        android:name="ru.netology.nework.ui.AuthFragment"
+        android:label="AuthFragment" />
+    <fragment
+        android:id="@+id/userProfileFragment"
+        android:name="ru.netology.nework.ui.UserProfileFragment"
+        android:label="UserProfileFragment" />
 </navigation>
