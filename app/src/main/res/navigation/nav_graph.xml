@@ -17,6 +17,9 @@
         <action
             android:id="@+id/action_holderFragment_to_userProfileFragment"
             app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_holderFragment_to_newEventFragment"
+            app:destination="@id/newEventFragment" />
     </fragment>
     <fragment
         android:id="@+id/newPostFragment"
@@ -30,4 +33,8 @@
         android:id="@+id/userProfileFragment"
         android:name="ru.netology.nework.ui.UserProfileFragment"
         android:label="UserProfileFragment" />
+    <fragment
+        android:id="@+id/newEventFragment"
+        android:name="ru.netology.nework.ui.NewEventFragment"
+        android:label="NewEventFragment" />
 </navigation>

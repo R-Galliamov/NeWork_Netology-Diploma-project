@@ -53,6 +53,9 @@ dependencies {
     def glide_version = "4.12.0"
     def nav_version = "2.6.0"
     def imagepicker_version = "2.1"
+    def viewpager_version = "1.0.0"
+
+    implementation "androidx.viewpager2:viewpager2:1.0.0"
 
     //Navigation
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"

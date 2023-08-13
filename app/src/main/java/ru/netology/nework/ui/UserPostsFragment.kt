@@ -7,11 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import ru.netology.nework.R
 import ru.netology.nework.adapter.PostAdapter
 import ru.netology.nework.databinding.FragmentFeedBinding
 import ru.netology.nework.dto.Post
@@ -19,13 +15,13 @@ import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 
 @AndroidEntryPoint
-class FeedFragment : Fragment() {
+class UserPostsFragment : Fragment() {
 
     private var _binding: FragmentFeedBinding? = null
     private val binding: FragmentFeedBinding
         get() = _binding!!
 
-    private val feedViewModel: FeedViewModel by activityViewModels()
+    private val postsViewModel: FeedViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -41,18 +37,13 @@ class FeedFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val adapter = PostAdapter(object : PostAdapter.OnInteractionListener {
             override fun onLike(post: Post) {
-                feedViewModel.onLike(post)
+                postsViewModel.onLike(post)
             }
 
             override fun onUser(userId: Int) {
-                viewLifecycleOwner.lifecycleScope.launch {
-                    val user = usersViewModel.getUserById(userId)
-                    if (user != null) {
-                        usersViewModel.setCurrentUser(user)
-                        findNavController().navigate(R.id.action_holderFragment_to_userProfileFragment)
-                    }
-                }
+                TODO("Not yet implemented")
             }
+
 
             override fun onImage() {
                 TODO("Not yet implemented")
@@ -65,16 +56,18 @@ class FeedFragment : Fragment() {
             override fun onAudio() {
 
             }
-
-
         })
         val recyclerView = binding.recyclerView
         recyclerView.adapter = adapter
-        feedViewModel.posts.observe(viewLifecycleOwner) { posts ->
-            adapter.submitList(posts)
+        postsViewModel.posts.observe(viewLifecycleOwner) {
+            val user = usersViewModel.currentUser.value
+            if (user != null) {
+                val posts = postsViewModel.getUserPosts(user.id)
+                adapter.submitList(posts)
+            }
         }
 
-        feedViewModel.errorLiveData.observe(viewLifecycleOwner) { error ->
+        postsViewModel.errorLiveData.observe(viewLifecycleOwner) { error ->
             Toast.makeText(requireContext(), error.status.toString(), Toast.LENGTH_SHORT).show()
             //TODO create error handler
         }

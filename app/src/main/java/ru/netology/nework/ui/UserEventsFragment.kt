@@ -6,26 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
-import ru.netology.nework.R
 import ru.netology.nework.adapter.EventAdapter
-import ru.netology.nework.adapter.UserAdapter
 import ru.netology.nework.databinding.FragmentEventsBinding
 import ru.netology.nework.dto.Event
-import ru.netology.nework.dto.User
-import ru.netology.nework.viewModel.AuthViewModel
+import ru.netology.nework.viewModel.EventsViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 
 @AndroidEntryPoint
-class UsersFragment : Fragment() {
+class UserEventsFragment : Fragment() {
 
     private var _binding: FragmentEventsBinding? = null
     private val binding: FragmentEventsBinding
         get() = _binding!!
 
-    private val viewModel: UsersViewModel by activityViewModels()
+    private val eventsViewModel: EventsViewModel by activityViewModels()
+    private val usersViewModel: UsersViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,17 +34,23 @@ class UsersFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = UserAdapter(object : UserAdapter.OnInteractionListener {
-            override fun onItem(user: User) {
-                viewModel.setCurrentUser(user)
-                findNavController().navigate(R.id.action_holderFragment_to_userProfileFragment)
+        val adapter = EventAdapter(object : EventAdapter.OnInteractionListener {
+            override fun onLike(event: Event) {
+
             }
+
         })
         val recyclerView = binding.recyclerView
         recyclerView.adapter = adapter
-        recyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
-        viewModel.users.observe(viewLifecycleOwner) { users ->
-            adapter.submitList(users)
+
+        eventsViewModel.events.observe(viewLifecycleOwner) {
+            val user = usersViewModel.currentUser.value
+            if (user != null) {
+                val events = eventsViewModel.getUserEvents(user.id)
+                adapter.submitList(events)
+            }
+
+
         }
 
         //viewModel.errorLiveData.observe(viewLifecycleOwner) { error ->

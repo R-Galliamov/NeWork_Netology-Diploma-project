@@ -78,8 +78,16 @@
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:clickable="true"
-
             android:src="@drawable/link_icon" />
+
+        <ImageView
+            android:id="@+id/add_date_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:src="@drawable/events_icon" />
 
         <ImageView
             android:id="@+id/add_location_button"
@@ -89,6 +97,15 @@
             android:layout_weight="1"
             android:clickable="true"
             android:src="@drawable/pin_icon" />
+
+        <ImageView
+            android:id="@+id/add_speakers_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:src="@drawable/speakers_icon" />
 
         <ImageView
             android:id="@+id/mention_user_button"

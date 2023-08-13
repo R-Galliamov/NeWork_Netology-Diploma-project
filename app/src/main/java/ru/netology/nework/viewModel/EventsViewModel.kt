@@ -29,6 +29,8 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
         loadEvents()
     }
 
+    fun getUserEvents(userId: Int) = events.value?.filter { event -> event.authorId == userId }
+
     fun loadEvents() {
         viewModelScope.launch {
             eventRepository.getAll()

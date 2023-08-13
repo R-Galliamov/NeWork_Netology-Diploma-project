@@ -10,9 +10,18 @@ fun ImageView.loadAvatar(url: String, vararg transforms: BitmapTransformation = 
     Glide.with(this)
         .load(url)
         .timeout(10_000)
-        .error(R.drawable.user_black_icon)
+        .error(R.drawable.user_icon)
         .transform(*transforms)
         .into(this)
 
-fun ImageView.loadCircleCropAvatar(url: String, vararg transforms: BitmapTransformation = emptyArray()) =
-    loadAvatar(url, CircleCrop(), *transforms)
+fun ImageView.loadCircleCropAvatar(
+    url: String,
+    vararg transforms: BitmapTransformation = emptyArray()
+) = loadAvatar(url, CircleCrop(), *transforms)
+
+fun ImageView.loadImageAttachment(url: String) =
+    Glide.with(this)
+        .load(url)
+        .timeout(10_000)
+        .error(R.drawable.error_icon)
+        .into(this)

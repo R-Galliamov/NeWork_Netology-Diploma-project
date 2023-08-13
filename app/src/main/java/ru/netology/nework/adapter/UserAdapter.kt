@@ -5,11 +5,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import ru.netology.nework.USER_AVATARS
 import ru.netology.nework.databinding.UserItemBinding
 import ru.netology.nework.dto.User
 import ru.netology.nework.view.loadCircleCropAvatar
-import kotlin.random.Random
 
 class UserAdapter(private val onInteractionListener: OnInteractionListener) :
     ListAdapter<User, UserAdapter.UserViewHolder>(UserDiffCallback()) {
@@ -21,12 +19,7 @@ class UserAdapter(private val onInteractionListener: OnInteractionListener) :
     inner class UserViewHolder(private val binding: UserItemBinding) : ViewHolder(binding.root) {
         fun bind(user: User) {
             binding.apply {
-                if (user.avatar.isNullOrBlank()) {
-                    val index = Random.nextInt(USER_AVATARS.size)
-                    avatar.setImageResource(USER_AVATARS[index])
-                } else {
-                    avatar.loadCircleCropAvatar(user.avatar.toString())
-                }
+                avatar.loadCircleCropAvatar(user.avatar.toString())
                 author.text = user.name
                 login.text = "@${user.login}"
             }

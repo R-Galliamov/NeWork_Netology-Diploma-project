@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.map
@@ -31,6 +32,9 @@ class FeedViewModel @Inject constructor(
         }
 
     }.asLiveData()
+
+    fun getUserPosts(userId: Int) = posts.value?.filter { post -> post.authorId == userId }
+
 
     private var _errorLiveData: MutableLiveData<ApiError> = MutableLiveData()
     val errorLiveData: MutableLiveData<ApiError>

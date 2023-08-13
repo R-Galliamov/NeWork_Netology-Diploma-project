@@ -91,9 +91,9 @@ class AuthViewModel @Inject constructor(
         Log.d("App log", appAuth.authStateFlow.value.toString())
     }
 
-    fun setAuthenticatedUser(userId: Int) {
+    private fun setAuthenticatedUser(userId: Int) {
         viewModelScope.launch {
-            val user = repository.getUser(userId)
+            val user = repository.getUserById(userId)
             _authenticatedUser.value = user
         }
     }

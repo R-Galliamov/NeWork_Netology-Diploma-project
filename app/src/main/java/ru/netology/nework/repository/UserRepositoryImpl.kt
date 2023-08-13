@@ -75,7 +75,7 @@ class UserRepositoryImpl @Inject constructor(
         return response.body() ?: throw ApiError(response.code(), response.message())
     }
 
-    override suspend fun getUser(userId: Int): User {
+    override suspend fun getUserById(userId: Int): User {
         val response = apiService.getUserById(userId)
         if (!response.isSuccessful) {
             throw ApiError(response.code(), response.message())

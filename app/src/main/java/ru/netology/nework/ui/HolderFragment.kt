@@ -79,17 +79,18 @@ class HolderFragment : Fragment() {
             }
         }
 
+        binding.avatar.setOnClickListener {
+            if (authViewModel.authenticated) {
+                findNavController().navigate(R.id.action_holderFragment_to_userProfileFragment)
+            } else {
+                findNavController().navigate(R.id.action_holderFragment_to_authFragment)
+            }
+        }
+
         authViewModel.authenticatedUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 binding.avatar.loadCircleCropAvatar(user.avatar.toString())
-                binding.avatar.setOnClickListener {
-                    usersViewModel.setCurrentUser(user)
-                    findNavController().navigate(R.id.action_holderFragment_to_userProfileFragment)
-                }
-            } else {
-                binding.avatar.setOnClickListener {
-                    findNavController().navigate(R.id.action_holderFragment_to_authFragment)
-                }
+                usersViewModel.setCurrentUser(user)
             }
         }
 
@@ -112,6 +113,7 @@ class HolderFragment : Fragment() {
                 }
 
                 R.id.add_event -> {
+                    findNavController().navigate(R.id.action_holderFragment_to_newEventFragment)
                     true
                 }
 

@@ -31,6 +31,10 @@ class UsersViewModel @Inject constructor(
         _currentUser.value = user
     }
 
+    suspend fun getUserById(userId: Int): User? =
+        users.value?.first { user -> userId == user.id } ?: usersRepository.getUserById(userId)
+
+
     fun loadUsers() {
         viewModelScope.launch {
             usersRepository.getAll()

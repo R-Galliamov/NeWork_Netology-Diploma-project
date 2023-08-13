@@ -7,19 +7,23 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import ru.netology.nework.R
-import ru.netology.nework.USER_AVATARS
 import ru.netology.nework.converters.DateTimeConverter
 import ru.netology.nework.databinding.PostItemBinding
+import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
 import ru.netology.nework.view.loadCircleCropAvatar
-import kotlin.random.Random
+import ru.netology.nework.view.loadImageAttachment
 
 class PostAdapter(private val onInteractionListener: OnInteractionListener) :
     ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
     interface OnInteractionListener {
         fun onLike(post: Post)
+        fun onUser(userId: Int)
+        fun onImage()
+        fun onVideo()
+        fun onAudio()
     }
 
     inner class PostViewHolder(private val binding: PostItemBinding) : ViewHolder(binding.root) {
@@ -45,14 +49,40 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
                     //updateLikeUi(likedByMe)
                     onInteractionListener.onLike(post)
                 }
-                if (post.authorAvatar.isNullOrBlank()) {
-                    val index = Random.nextInt(USER_AVATARS.size)
-                    authorAvatar.setImageResource(USER_AVATARS[index])
-                } else {
-                    authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
+                authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
+                authorAvatar.setOnClickListener {
+                    onInteractionListener.onUser(post.authorId)
+                }
+                authorName.setOnClickListener {
+                    onInteractionListener.onUser(post.authorId)
+                }
+                authorJob.setOnClickListener {
+                    onInteractionListener.onUser(post.authorId)
                 }
                 date.text = DateTimeConverter.publishedToUIDate(post.published)
                 time.text = DateTimeConverter.publishedToUiTime(post.published)
+                if (post.attachment != null) {
+                    when (post.attachment.type) {
+                        Attachment.Type.IMAGE -> {
+                            imageAttachment.loadImageAttachment(post.attachment.url)
+                            imageAttachment.visibility = View.VISIBLE
+                        }
+
+                        Attachment.Type.VIDEO -> {
+                            onInteractionListener.onVideo()
+                        }
+
+                        Attachment.Type.AUDIO -> {
+                            playerAttachment.visibility = View.VISIBLE
+                            onInteractionListener.onAudio()
+                        }
+                    }
+                }
+                if (post.ownedByMe) {
+                    TODO("show pop up menu")
+                } else {
+                    menu.visibility = View.GONE
+                }
             }
         }
 

@@ -5,10 +5,10 @@ import ru.netology.nework.dto.Coordinates
 
 
 data class PostRequest(
-    val id: Int,
+    val id: Int = 0,
     val content: String,
-    val coords: Coordinates,
-    val link: String,
-    val attachment: Attachment,
-    val mentionIds: List<Int>,
+    val coords: Coordinates? = null,
+    val link: String? = null,
+    val attachment: Attachment? = null,
+    val mentionIds: List<Int> = emptyList(),
 )

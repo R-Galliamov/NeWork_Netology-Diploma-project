@@ -15,7 +15,6 @@ interface UserRepository {
         regRequest: RegistrationRequest
     ): AuthState
 
-    suspend fun getUser(userId: Int): User
-
+    suspend fun getUserById(userId: Int): User
 
 }

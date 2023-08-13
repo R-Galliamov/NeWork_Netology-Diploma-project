@@ -8,6 +8,7 @@ import ru.netology.nework.dao.PostDao
 import ru.netology.nework.dto.Post
 import ru.netology.nework.entity.PostEntity
 import ru.netology.nework.entity.toDto
+import ru.netology.nework.entity.toEntity
 import ru.netology.nework.error.ApiError
 import ru.netology.nework.error.NetworkError
 import ru.netology.nework.error.UnknownError
@@ -25,14 +26,12 @@ class PostRepositoryImpl @Inject constructor(
         postDao.getAll().map(List<PostEntity>::toDto).flowOn(Dispatchers.Default)
 
     override suspend fun getAll() {
-        /*
         val response = apiService.getAllPosts()
         if (!response.isSuccessful) {
             throw ApiError(response.code(), response.message())
         }
         val body = response.body() ?: throw ApiError(response.code(), response.message())
         postDao.upsertPost(body.toEntity())
-         */
     }
 
     override suspend fun onLike(post: Post) {
