@@ -1,5 +1,7 @@
 package ru.netology.nework.adapter
 
+import android.text.SpannableStringBuilder
+import android.text.style.ClickableSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +13,6 @@ import ru.netology.nework.converters.DateTimeConverter
 import ru.netology.nework.databinding.PostItemBinding
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
-import ru.netology.nework.dto.User
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
 
@@ -21,6 +22,7 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
     interface OnInteractionListener {
         fun onLike(post: Post)
         fun onUser(userId: Int)
+        fun onLink(url: String)
         fun onImage()
         fun onVideo()
         fun onAudio()
@@ -35,7 +37,28 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
                 content.text = post.content
                 link.text = post.link.orEmpty()
                 coords.text = post.coords.let { "${it?.lat} : ${it?.long}" }
-                mention.text = post.mentionUsers.joinToString(", ") { it.name }
+
+                val spannableStringBuilder = SpannableStringBuilder()
+                post.mentionIds.forEachIndexed { index, userId ->
+                    val clickableSpan = object : ClickableSpan() {
+                        override fun onClick(view: View) {
+                            onInteractionListener.onUser(userId)
+                        }
+                    }
+
+                    val userPreview =
+                        post.users.filterKeys { it.toInt() == userId }.values.first()
+                    spannableStringBuilder.append(
+                        userPreview.name,
+                        clickableSpan,
+                        SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    if (index < post.mentionIds.size - 1) {
+                        spannableStringBuilder.append(", ")
+                    }
+                }
+                mention.text = spannableStringBuilder
+
                 linkContainer.visibility =
                     if (post.link.isNullOrBlank()) View.GONE else View.VISIBLE
                 coordsContainer.visibility = if (post.coords == null) View.GONE else View.VISIBLE
@@ -44,10 +67,13 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
                 var likedByMe = post.likedByMe
                 updateLikeUi(likedByMe)
                 like.setOnClickListener {
-                    //TODO check if data updates when like clicked
-                    //likedByMe = !likedByMe
-                    //updateLikeUi(likedByMe)
                     onInteractionListener.onLike(post)
+                }
+                if (post.likeOwnerIds.isEmpty()) {
+                    likeCount.visibility = View.GONE
+                } else {
+                    likeCount.visibility = View.VISIBLE
+                    likeCount.text = post.likeOwnerIds.size.toString()
                 }
                 authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
                 authorAvatar.setOnClickListener {
@@ -59,6 +85,9 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
                 authorJob.setOnClickListener {
                     onInteractionListener.onUser(post.authorId)
                 }
+                link.setOnClickListener {
+                    onInteractionListener.onLink(post.link.toString())
+                }
                 date.text = DateTimeConverter.publishedToUIDate(post.published)
                 time.text = DateTimeConverter.publishedToUiTime(post.published)
                 if (post.attachment != null) {
@@ -66,17 +95,24 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
                         Attachment.Type.IMAGE -> {
                             imageAttachment.loadImageAttachment(post.attachment.url)
                             imageAttachment.visibility = View.VISIBLE
+                            playerAttachment.visibility = View.GONE
                         }
 
                         Attachment.Type.VIDEO -> {
                             onInteractionListener.onVideo()
+                            imageAttachment.visibility = View.GONE
+                            playerAttachment.visibility = View.GONE
                         }
 
                         Attachment.Type.AUDIO -> {
                             playerAttachment.visibility = View.VISIBLE
+                            imageAttachment.visibility = View.GONE
                             onInteractionListener.onAudio()
                         }
                     }
+                } else {
+                    imageAttachment.visibility = View.GONE
+                    playerAttachment.visibility = View.GONE
                 }
                 if (post.ownedByMe) {
                     TODO("show pop up menu")

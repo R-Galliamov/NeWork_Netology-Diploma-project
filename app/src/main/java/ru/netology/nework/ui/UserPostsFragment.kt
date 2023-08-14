@@ -44,6 +44,10 @@ class UserPostsFragment : Fragment() {
                 TODO("Not yet implemented")
             }
 
+            override fun onLink(url: String) {
+                TODO("Not yet implemented")
+            }
+
 
             override fun onImage() {
                 TODO("Not yet implemented")

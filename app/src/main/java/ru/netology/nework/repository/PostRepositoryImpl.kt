@@ -35,14 +35,14 @@ class PostRepositoryImpl @Inject constructor(
     }
 
     override suspend fun onLike(post: Post) {
-        val likedByMe = !post.likedByMe
         try {
             val response =
-                if (likedByMe) apiService.likeById(post.id) else apiService.dislikeById(post.id)
+                if (!post.likedByMe) apiService.likeById(post.id) else apiService.dislikeById(post.id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
-            postDao.upsertPost(PostEntity.fromDto(post.copy(likedByMe = !post.likedByMe)))
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            postDao.upsertPost(PostEntity.fromDto(body))
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: ApiError) {

@@ -4,7 +4,6 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import ru.netology.nework.dto.Post
-import ru.netology.nework.dto.User
 import ru.netology.nework.dto.UserPreview
 
 @Entity
@@ -21,6 +20,7 @@ data class PostEntity(
     var coords: CoordinatesEmbeddable?,
     val link: String?,
     val likeOwnerIds: List<Int>,
+    val likesCount: Int,
     val mentionIds: List<Int>,
     val mentionedMe: Boolean,
     val likedByMe: Boolean,
@@ -39,6 +39,7 @@ data class PostEntity(
         coords = coords?.toDto(),
         link = link,
         likeOwnerIds = likeOwnerIds,
+        likesCount = likesCount,
         mentionIds = mentionIds,
         mentionedMe = mentionedMe,
         likedByMe = likedByMe,
@@ -58,6 +59,7 @@ data class PostEntity(
             coords = CoordinatesEmbeddable.fromDto(post.coords),
             link = post.link,
             likeOwnerIds = post.likeOwnerIds,
+            likesCount = post.likesCount,
             mentionIds = post.mentionIds,
             mentionedMe = post.mentionedMe,
             likedByMe = post.likedByMe,

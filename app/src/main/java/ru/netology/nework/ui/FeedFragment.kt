@@ -1,5 +1,7 @@
 package ru.netology.nework.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -54,6 +56,11 @@ class FeedFragment : Fragment() {
                 }
             }
 
+            override fun onLink(url: String) {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(intent)
+            }
+
             override fun onImage() {
                 TODO("Not yet implemented")
             }
@@ -70,11 +77,13 @@ class FeedFragment : Fragment() {
         })
         val recyclerView = binding.recyclerView
         recyclerView.adapter = adapter
-        feedViewModel.posts.observe(viewLifecycleOwner) { posts ->
+        feedViewModel.posts.observe(viewLifecycleOwner)
+        { posts ->
             adapter.submitList(posts)
         }
 
-        feedViewModel.errorLiveData.observe(viewLifecycleOwner) { error ->
+        feedViewModel.errorLiveData.observe(viewLifecycleOwner)
+        { error ->
             Toast.makeText(requireContext(), error.status.toString(), Toast.LENGTH_SHORT).show()
             //TODO create error handler
         }
