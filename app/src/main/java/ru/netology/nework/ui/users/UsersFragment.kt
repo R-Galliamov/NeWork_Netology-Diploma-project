@@ -19,6 +19,7 @@ import ru.netology.nework.dto.User
 import ru.netology.nework.service.MediaLifecycleObserver
 import ru.netology.nework.viewModel.NavStateViewModel
 import ru.netology.nework.viewModel.UsersViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class UsersFragment : Fragment() {
@@ -30,7 +31,8 @@ class UsersFragment : Fragment() {
     private val usersViewModel: UsersViewModel by activityViewModels()
     private val navStateViewModel: NavStateViewModel by activityViewModels()
 
-    private val mediaObserver = MediaLifecycleObserver()
+    @Inject
+    lateinit var mediaObserver: MediaLifecycleObserver
 
     override fun onCreateView(
         inflater: LayoutInflater,

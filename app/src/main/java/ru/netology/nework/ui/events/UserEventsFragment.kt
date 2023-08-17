@@ -26,6 +26,7 @@ import ru.netology.nework.listeners.OnEventInteractionListener
 import ru.netology.nework.service.MediaLifecycleObserver
 import ru.netology.nework.viewModel.EventsViewModel
 import ru.netology.nework.viewModel.UsersViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class UserEventsFragment : Fragment() {
@@ -37,7 +38,8 @@ class UserEventsFragment : Fragment() {
     private val eventsViewModel: EventsViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
 
-    private val mediaObserver = MediaLifecycleObserver()
+    @Inject
+    lateinit var mediaObserver: MediaLifecycleObserver
     private var adapter: EventAdapter? = null
 
     override fun onCreateView(

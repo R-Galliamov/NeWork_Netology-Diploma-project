@@ -8,18 +8,23 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayoutMediator
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nework.R
 import ru.netology.nework.adapter.JobsAdapter
 import ru.netology.nework.adapter.UserWallAdapter
 import ru.netology.nework.databinding.FragmentUserProfileBinding
 import ru.netology.nework.dto.Job
 import ru.netology.nework.dto.User
+import ru.netology.nework.service.MediaLifecycleObserver
 import ru.netology.nework.ui.events.UserEventsFragment
 import ru.netology.nework.ui.posts.UserPostsFragment
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.viewModel.AuthViewModel
 import ru.netology.nework.viewModel.UsersViewModel
+import javax.inject.Inject
+import javax.inject.Singleton
 
+@AndroidEntryPoint
 class UserProfileFragment : Fragment() {
 
     private var _binding: FragmentUserProfileBinding? = null
@@ -27,6 +32,9 @@ class UserProfileFragment : Fragment() {
         get() = _binding!!
     private val usersViewModel: UsersViewModel by activityViewModels()
     private val authViewModel: AuthViewModel by activityViewModels()
+
+    @Inject
+    lateinit var mediaObserver: MediaLifecycleObserver
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,6 +57,7 @@ class UserProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        lifecycle.addObserver(mediaObserver)
         val adapter = JobsAdapter(object : JobsAdapter.OnInteractionListener {
             override fun onItem(job: Job) {
 

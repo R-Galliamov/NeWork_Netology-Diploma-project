@@ -32,6 +32,7 @@ import ru.netology.nework.viewModel.AuthViewModel
 import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.NavStateViewModel
 import ru.netology.nework.viewModel.UsersViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class FeedFragment : Fragment() {
@@ -43,9 +44,9 @@ class FeedFragment : Fragment() {
     private val feedViewModel: FeedViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
     private val navStateViewModel: NavStateViewModel by activityViewModels()
-    private val authViewModel: AuthViewModel by activityViewModels()
 
-    private val mediaObserver = MediaLifecycleObserver()
+    @Inject
+    lateinit var mediaObserver: MediaLifecycleObserver
 
     private var postAdapter: PostAdapter? = null
 

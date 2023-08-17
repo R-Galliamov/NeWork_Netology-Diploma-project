@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,7 +34,9 @@ import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
 import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.UsersViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class PostFragment : Fragment() {
 
     private var _binding: FragmentPostBinding? = null
@@ -41,7 +44,8 @@ class PostFragment : Fragment() {
         get() = _binding!!
     private val feedViewModel: FeedViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
-    private val mediaObserver = MediaLifecycleObserver()
+    @Inject
+    lateinit var mediaObserver: MediaLifecycleObserver
 
     override fun onCreateView(
         inflater: LayoutInflater,

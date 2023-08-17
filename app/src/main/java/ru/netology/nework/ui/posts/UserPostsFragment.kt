@@ -26,6 +26,7 @@ import ru.netology.nework.listeners.OnPostInteractionListener
 import ru.netology.nework.service.MediaLifecycleObserver
 import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.UsersViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class UserPostsFragment : Fragment() {
@@ -37,7 +38,8 @@ class UserPostsFragment : Fragment() {
     private val feedViewModel: FeedViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
 
-    private val mediaObserver = MediaLifecycleObserver()
+    @Inject
+    lateinit var mediaObserver: MediaLifecycleObserver
 
     private var adapter: PostAdapter? = null
 
@@ -60,8 +62,8 @@ class UserPostsFragment : Fragment() {
         val usersAdapter = UserAdapter(object : UserAdapter.OnInteractionListener {
             override fun onItem(user: User) {
                 usersViewModel.setCurrentUser(user)
-                findNavController().navigate(R.id.action_userProfileFragment_self)
                 binding.usersContainer.visibility = View.GONE
+                findNavController().navigate(R.id.action_userProfileFragment_self)
             }
         })
         usersRecyclerView.adapter = usersAdapter
@@ -173,9 +175,12 @@ class UserPostsFragment : Fragment() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
-        feedViewModel.resetState()
         _binding = null
     }
 }

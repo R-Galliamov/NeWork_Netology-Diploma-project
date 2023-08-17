@@ -1,6 +1,7 @@
 package ru.netology.nework.service
 
 import android.media.MediaPlayer
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -10,12 +11,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.netology.nework.dto.Attachment
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class MediaLifecycleObserver : LifecycleEventObserver {
-    private var player: MediaPlayer? = MediaPlayer()
-   var isPlaying = false
-   var isSet = false
-   var trackPostOrEventId = -1
+@Singleton
+class MediaLifecycleObserver @Inject constructor() : LifecycleEventObserver {
+    private var player: MediaPlayer? = null
+    var isPlaying = false
+    var isSet = false
+    var trackPostOrEventId = -1
 
     private var trackDuration: Int = 0
     private var currentPosition: Int = 0
@@ -27,6 +31,13 @@ class MediaLifecycleObserver : LifecycleEventObserver {
 
     fun getTracDuration(): Int {
         return trackDuration
+    }
+
+    private fun initPlayer(){
+        if (player == null){
+            player = MediaPlayer()
+            Log.d("App log init", player.toString())
+        }
     }
 
     private fun play() {
@@ -63,6 +74,7 @@ class MediaLifecycleObserver : LifecycleEventObserver {
         player?.stop()
         player?.reset()
         isSet = false
+        trackPostOrEventId = -1
         progressJob?.cancel()
     }
 
@@ -85,6 +97,7 @@ class MediaLifecycleObserver : LifecycleEventObserver {
             if (isSet) {
                 stopAndReset()
             }
+            initPlayer()
             player?.setDataSource(audio.url)
             player?.setOnCompletionListener {
                 trackPostOrEventId = -1
@@ -93,6 +106,7 @@ class MediaLifecycleObserver : LifecycleEventObserver {
             }
             isSet = true
             play()
+            Log.d("App log delegate", player.toString())
         } else {
             if (isPlaying) {
                 pause()
@@ -103,10 +117,12 @@ class MediaLifecycleObserver : LifecycleEventObserver {
     }
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        Log.d("App log destroy", player.toString())
+        Log.d("App log destroy", this.toString())
         when (event) {
             Lifecycle.Event.ON_PAUSE -> pause()
             Lifecycle.Event.ON_STOP -> {
-                player?.release()
+                stopAndReset()
                 player = null
             }
 

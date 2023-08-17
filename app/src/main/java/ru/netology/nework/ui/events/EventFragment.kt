@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,7 +34,9 @@ import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
 import ru.netology.nework.viewModel.EventsViewModel
 import ru.netology.nework.viewModel.UsersViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class EventFragment : Fragment() {
 
     private var _binding: FragmentEventBinding? = null
@@ -42,7 +45,8 @@ class EventFragment : Fragment() {
     private val eventsViewModel: EventsViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
     lateinit var onInteractionListener: OnEventInteractionListener
-    private val mediaObserver = MediaLifecycleObserver()
+    @Inject
+    lateinit var mediaObserver: MediaLifecycleObserver
 
     override fun onCreateView(
         inflater: LayoutInflater,
