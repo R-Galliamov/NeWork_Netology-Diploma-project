@@ -24,6 +24,24 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
     ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
     private var currentMediaId = -1
+    private var trackProgress = 0
+
+    fun setProgress(trackProgress: Int) {
+        this.trackProgress = trackProgress
+    }
+
+    fun resetCurrentMediaId() {
+        currentMediaId = -1
+    }
+
+    fun getPositionByPostId(postId: Int): Int {
+        for (i in 0 until currentList.size) {
+            if (currentList[i].id == postId) {
+                return i
+            }
+        }
+        return RecyclerView.NO_POSITION
+    }
 
     inner class PostViewHolder(private val binding: PostItemBinding) : ViewHolder(binding.root) {
         fun bind(post: Post) {
@@ -33,6 +51,7 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
             setupPlayButton(post)
             setupOnUserListeners(post)
             setupMentions(post)
+            updateAudioProgress(post)
             setupLikes(post.likedByMe, post)
             setupDateTime(post)
             setupAttachments(post)
@@ -171,7 +190,6 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
 
                     Attachment.Type.AUDIO -> {
                         playerAttachment.visibility = View.VISIBLE
-                        progressBar.progress = 0
                         playButton.setOnClickListener {
                             currentMediaId = post.id
                             onInteractionListener.onAudio(attachment, post.id)
@@ -187,7 +205,14 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
                 }
             }
         }
+
+
+
+        private fun updateAudioProgress(post: Post) {
+            binding.progressBar.progress = if (currentMediaId == post.id) trackProgress else 0
+        }
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = PostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)

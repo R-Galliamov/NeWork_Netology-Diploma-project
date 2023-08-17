@@ -15,7 +15,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.netology.nework.R
 import ru.netology.nework.adapter.PostAdapter
 import ru.netology.nework.adapter.UserAdapter
@@ -126,7 +129,28 @@ class FeedFragment : Fragment() {
 
             override fun onAudio(audio: Attachment, postId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
-                    mediaObserver.mediaPlayerDelegate(audio, postId) { }
+                    mediaObserver.mediaPlayerDelegate(audio, postId) {
+                        postAdapter?.resetCurrentMediaId()
+                        postAdapter?.notifyDataSetChanged()
+                    }
+
+                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+                        while (mediaObserver.isPlaying) {
+                            val currentPosition = mediaObserver.getCurrentPosition()
+                            delay(100)
+                            withContext(Dispatchers.Main) {
+                                val trackDuration = mediaObserver.getTracDuration()
+                                if (trackDuration != 0) {
+                                    postAdapter?.setProgress((currentPosition * 100) / trackDuration)
+                                }
+                                postAdapter?.let {
+                                    val itemPosition = it.getPositionByPostId(postId)
+                                    it.notifyItemChanged(itemPosition)
+                                }
+                            }
+                        }
+                    }
+
                 } else {
                     Toast.makeText(
                         requireContext(),
@@ -134,6 +158,7 @@ class FeedFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+
             }
 
             override fun isAudioPlaying(): Boolean {

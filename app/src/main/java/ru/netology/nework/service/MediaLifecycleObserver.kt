@@ -87,6 +87,7 @@ class MediaLifecycleObserver : LifecycleEventObserver {
             }
             player?.setDataSource(audio.url)
             player?.setOnCompletionListener {
+                trackPostOrEventId = -1
                 stopAndReset()
                 onComplete()
             }
