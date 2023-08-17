@@ -1,81 +1,83 @@
 package ru.netology.nework.adapter
 
 import android.text.SpannableStringBuilder
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import ru.netology.nework.R
 import ru.netology.nework.converters.DateTimeConverter
 import ru.netology.nework.databinding.PostItemBinding
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
+import ru.netology.nework.listeners.OnPostInteractionListener
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
 
-class PostAdapter(private val onInteractionListener: OnInteractionListener) :
+class PostAdapter(private val onInteractionListener: OnPostInteractionListener) :
     ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
-    interface OnInteractionListener {
-        fun onLike(post: Post)
-        fun onUser(userId: Int)
-        fun onLink(url: String)
-        fun onImage()
-        fun onVideo()
-        fun onAudio()
-    }
+    private var currentMediaId = -1
 
     inner class PostViewHolder(private val binding: PostItemBinding) : ViewHolder(binding.root) {
         fun bind(post: Post) {
+            setupUserData(post)
+            setupLink(post)
+            setupCoords(post)
+            setupPlayButton(post)
+            setupOnUserListeners(post)
+            setupMentions(post)
+            setupLikes(post.likedByMe, post)
+            setupDateTime(post)
+            setupAttachments(post)
+            setupMenu(post)
+            setupContent(post)
+        }
+
+        private fun setupContent(post: Post) {
+            binding.apply {
+                content.text = post.content
+                itemView.setOnClickListener {
+                    onInteractionListener.onContent(post)
+                }
+            }
+        }
+
+        private fun setupUserData(post: Post) {
             binding.apply {
                 authorName.text = post.authorId.toString()
                 authorJob.text = post.authorJob ?: ""
                 authorName.text = post.author
-                content.text = post.content
-                link.text = post.link.orEmpty()
-                coords.text = post.coords.let { "${it?.lat} : ${it?.long}" }
+                authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
+            }
+        }
 
-                val spannableStringBuilder = SpannableStringBuilder()
-                post.mentionIds.forEachIndexed { index, userId ->
-                    val clickableSpan = object : ClickableSpan() {
-                        override fun onClick(view: View) {
-                            onInteractionListener.onUser(userId)
-                        }
-                    }
-
-                    val userPreview =
-                        post.users.filterKeys { it.toInt() == userId }.values.first()
-                    spannableStringBuilder.append(
-                        userPreview.name,
-                        clickableSpan,
-                        SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    if (index < post.mentionIds.size - 1) {
-                        spannableStringBuilder.append(", ")
-                    }
+        private fun setupLink(post: Post) {
+            binding.apply {
+                link.setOnClickListener {
+                    onInteractionListener.onLink(post.link.toString())
                 }
-                mention.text = spannableStringBuilder
-
                 linkContainer.visibility =
                     if (post.link.isNullOrBlank()) View.GONE else View.VISIBLE
+                link.text = post.link.orEmpty()
+            }
+        }
+
+        private fun setupCoords(post: Post) {
+            binding.apply {
                 coordsContainer.visibility = if (post.coords == null) View.GONE else View.VISIBLE
-                mentionedContainer.visibility =
-                    if (post.mentionIds.isEmpty()) View.GONE else View.VISIBLE
-                var likedByMe = post.likedByMe
-                updateLikeUi(likedByMe)
-                like.setOnClickListener {
-                    onInteractionListener.onLike(post)
-                }
-                if (post.likeOwnerIds.isEmpty()) {
-                    likeCount.visibility = View.GONE
-                } else {
-                    likeCount.visibility = View.VISIBLE
-                    likeCount.text = post.likeOwnerIds.size.toString()
-                }
-                authorAvatar.loadCircleCropAvatar(post.authorAvatar.toString())
+                coords.text = post.coords.let { "${it?.lat} : ${it?.long}" }
+            }
+        }
+
+        private fun setupOnUserListeners(post: Post) {
+            binding.apply {
                 authorAvatar.setOnClickListener {
                     onInteractionListener.onUser(post.authorId)
                 }
@@ -85,47 +87,105 @@ class PostAdapter(private val onInteractionListener: OnInteractionListener) :
                 authorJob.setOnClickListener {
                     onInteractionListener.onUser(post.authorId)
                 }
-                link.setOnClickListener {
-                    onInteractionListener.onLink(post.link.toString())
-                }
-                date.text = DateTimeConverter.publishedToUIDate(post.published)
-                time.text = DateTimeConverter.publishedToUiTime(post.published)
-                if (post.attachment != null) {
-                    when (post.attachment.type) {
-                        Attachment.Type.IMAGE -> {
-                            imageAttachment.loadImageAttachment(post.attachment.url)
-                            imageAttachment.visibility = View.VISIBLE
-                            playerAttachment.visibility = View.GONE
-                        }
-
-                        Attachment.Type.VIDEO -> {
-                            onInteractionListener.onVideo()
-                            imageAttachment.visibility = View.GONE
-                            playerAttachment.visibility = View.GONE
-                        }
-
-                        Attachment.Type.AUDIO -> {
-                            playerAttachment.visibility = View.VISIBLE
-                            imageAttachment.visibility = View.GONE
-                            onInteractionListener.onAudio()
-                        }
-                    }
-                } else {
-                    imageAttachment.visibility = View.GONE
-                    playerAttachment.visibility = View.GONE
-                }
-                if (post.ownedByMe) {
-                    TODO("show pop up menu")
-                } else {
-                    menu.visibility = View.GONE
-                }
             }
         }
 
-        private fun updateLikeUi(likedByMe: Boolean) {
-            val likeRes =
-                if (likedByMe) R.drawable.like_checked else R.drawable.like_unchecked
+        private fun setupDateTime(post: Post) {
+            binding.date.text = DateTimeConverter.publishedToUIDate(post.published)
+            binding.time.text = DateTimeConverter.publishedToUiTime(post.published)
+        }
+
+        private fun setupMenu(post: Post) {
+            if (post.ownedByMe) {
+                binding.menu.visibility = View.VISIBLE
+            } else {
+                binding.menu.visibility = View.GONE
+            }
+        }
+
+        private fun setupPlayButton(post: Post) {
+            if (currentMediaId != post.id) {
+                binding.playButton.setImageResource(R.drawable.play_icon)
+            } else {
+                val imageId =
+                    if (onInteractionListener.isAudioPlaying()) R.drawable.pause_icon else R.drawable.play_icon
+                binding.playButton.setImageResource(imageId)
+            }
+        }
+
+        private fun setupMentions(post: Post) {
+            binding.mentionedContainer.visibility =
+                if (post.mentionIds.isEmpty()) View.GONE else View.VISIBLE
+            val spannableStringBuilder = SpannableStringBuilder()
+            post.mentionIds.forEachIndexed { index, userId ->
+                val clickableSpan = object : ClickableSpan() {
+                    override fun onClick(view: View) {
+                        onInteractionListener.onUser(userId)
+                    }
+
+                    override fun updateDrawState(ds: TextPaint) {
+                        super.updateDrawState(ds)
+                        ds.isUnderlineText = false
+                    }
+                }
+
+                val userPreview = post.users.filterKeys { it.toInt() == userId }.values.first()
+                spannableStringBuilder.append(
+                    userPreview.name, clickableSpan, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                if (index < post.mentionIds.size - 1) {
+                    spannableStringBuilder.append(", ")
+                }
+            }
+            binding.mention.movementMethod = LinkMovementMethod.getInstance()
+            binding.mention.text = spannableStringBuilder
+        }
+
+        private fun setupLikes(likedByMe: Boolean, post: Post) {
+            val likeRes = if (likedByMe) R.drawable.like_checked else R.drawable.like_unchecked
             binding.like.setImageResource(likeRes)
+            binding.like.setOnClickListener {
+                onInteractionListener.onLike(getItem(adapterPosition))
+            }
+            binding.like.setOnLongClickListener {
+                onInteractionListener.onLikeLongClick(getItem(adapterPosition).likeOwnerIds)
+                true
+            }
+            binding.likeCount.text = post.likeOwnerIds.size.toString()
+            binding.likeCount.visibility =
+                if (likedByMe || (binding.likeCount.text.toString().toIntOrNull()
+                        ?: 0) > 0
+                ) View.VISIBLE else View.GONE
+        }
+
+        private fun setupAttachments(post: Post) {
+            binding.apply {
+                imageAttachment.visibility = View.GONE
+                playerAttachment.visibility = View.GONE
+                val attachment = post.attachment
+                when (attachment?.type) {
+                    Attachment.Type.IMAGE -> {
+                        imageAttachment.visibility = View.VISIBLE
+                        imageAttachment.loadImageAttachment(attachment.url)
+                    }
+
+                    Attachment.Type.AUDIO -> {
+                        playerAttachment.visibility = View.VISIBLE
+                        progressBar.progress = 0
+                        playButton.setOnClickListener {
+                            currentMediaId = post.id
+                            onInteractionListener.onAudio(attachment, post.id)
+                            setupPlayButton(post)
+                        }
+                    }
+
+                    Attachment.Type.VIDEO -> {
+
+                    }
+
+                    null -> {}
+                }
+            }
         }
     }
 

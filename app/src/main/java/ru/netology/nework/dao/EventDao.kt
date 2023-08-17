@@ -10,9 +10,10 @@ import kotlinx.coroutines.flow.Flow
 interface EventDao {
     @Query("SELECT * FROM EventEntity ORDER BY id DESC")
     fun getAll(): Flow<List<EventEntity>>
-
     @Upsert
     suspend fun upsertEvent(event: EventEntity)
     @Upsert
     suspend fun upsertEvent(events: List<EventEntity>)
+    @Query("SELECT COUNT(*) FROM EventEntity")
+    fun getRowCount(): Int
 }

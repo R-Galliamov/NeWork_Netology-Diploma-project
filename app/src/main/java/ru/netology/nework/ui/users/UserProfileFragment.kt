@@ -1,4 +1,4 @@
-package ru.netology.nework.ui
+package ru.netology.nework.ui.users
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,8 +9,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayoutMediator
 import ru.netology.nework.R
+import ru.netology.nework.adapter.JobsAdapter
 import ru.netology.nework.adapter.UserWallAdapter
 import ru.netology.nework.databinding.FragmentUserProfileBinding
+import ru.netology.nework.dto.Job
+import ru.netology.nework.dto.User
+import ru.netology.nework.ui.events.UserEventsFragment
+import ru.netology.nework.ui.posts.UserPostsFragment
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.viewModel.AuthViewModel
 import ru.netology.nework.viewModel.UsersViewModel
@@ -44,6 +49,13 @@ class UserProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val adapter = JobsAdapter(object : JobsAdapter.OnInteractionListener {
+            override fun onItem(job: Job) {
+
+            }
+        })
+        binding.recyclerViewJobs.adapter = adapter
+
         usersViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 binding.apply {
@@ -55,10 +67,7 @@ class UserProfileFragment : Fragment() {
                     userName.text = user.name
                     login.text = "@${user.login}"
 
-                    backButton.setOnClickListener {
-                        findNavController().navigateUp()
-                    }
-
+                    adapter.submitList(user.jobs)
                     if (usersViewModel.currentUser.value == authViewModel.authenticatedUser.value) {
                         signOutButton.visibility = View.VISIBLE
                         signOutButton.setOnClickListener {
@@ -68,6 +77,10 @@ class UserProfileFragment : Fragment() {
                     } else {
                         signOutButton.visibility = View.GONE
                     }
+
+                    backButton.setOnClickListener {
+                        findNavController().navigateUp()
+                    }
                 }
             }
         }
@@ -75,6 +88,15 @@ class UserProfileFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        resetUser()
         _binding = null
+    }
+
+    private fun resetUser() {
+        usersViewModel.usersNavList.removeLast()
+        val previousUser = usersViewModel.usersNavList.lastOrNull()
+        if (previousUser != null) {
+            usersViewModel.setCurrentUser(previousUser)
+        }
     }
 }

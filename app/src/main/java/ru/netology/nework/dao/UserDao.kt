@@ -20,4 +20,7 @@ interface UserDao {
 
     @Query("DELETE FROM UserEntity WHERE id = :id")
     suspend fun deleteUserById(id: Int)
+
+    @Query("SELECT COUNT(*) FROM UserEntity")
+    fun getRowCount(): Int
 }

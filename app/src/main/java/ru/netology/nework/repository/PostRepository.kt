@@ -5,7 +5,8 @@ import ru.netology.nework.dto.Post
 
 interface PostRepository {
     val data: Flow<List<Post>>
-
     suspend fun getAll()
-    suspend fun onLike(post: Post)
+    suspend fun onLike(post: Post): Post
+
+    suspend fun isDbEmpty(): Boolean
 }

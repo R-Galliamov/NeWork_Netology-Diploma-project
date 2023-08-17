@@ -34,15 +34,16 @@ class PostRepositoryImpl @Inject constructor(
         postDao.upsertPost(body.toEntity())
     }
 
-    override suspend fun onLike(post: Post) {
+    override suspend fun onLike(post: Post) : Post {
         try {
             val response =
-                if (!post.likedByMe) apiService.likeById(post.id) else apiService.dislikeById(post.id)
+                if (!post.likedByMe) apiService.likePostById(post.id) else apiService.dislikePostById(post.id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.upsertPost(PostEntity.fromDto(body))
+            val post = response.body() ?: throw ApiError(response.code(), response.message())
+            postDao.upsertPost(PostEntity.fromDto(post))
+            return post
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: ApiError) {
@@ -51,4 +52,6 @@ class PostRepositoryImpl @Inject constructor(
             throw UnknownError
         }
     }
+
+    override suspend fun isDbEmpty() = postDao.getRowCount() == 0
 }

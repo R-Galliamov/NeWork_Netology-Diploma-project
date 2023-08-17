@@ -7,6 +7,7 @@ import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -19,6 +20,7 @@ import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
 import ru.netology.nework.dto.AuthState
+import ru.netology.nework.dto.Job
 
 private const val BASE_URL = "https://netomedia.ru/"
 
@@ -37,20 +39,25 @@ fun retrofit(client: OkHttpClient): Retrofit = Retrofit.Builder()
     .build()
 
 interface ApiService {
-
     //Posts
     @GET("api/posts/")
     suspend fun getAllPosts(): Response<List<Post>>
 
     @POST("api/posts/{id}/likes/")
-    suspend fun likeById(@Path("id") id: Int): Response<Post>
+    suspend fun likePostById(@Path("id") id: Int): Response<Post>
 
     @DELETE("api/posts/{id}/likes")
-    suspend fun dislikeById(@Path("id") id: Int): Response<Post>
+    suspend fun dislikePostById(@Path("id") id: Int): Response<Post>
 
     //Events
     @GET("api/events/")
     suspend fun getAllEvents(): Response<List<Event>>
+
+    @POST("api/events/{id}/likes/")
+    suspend fun likeEventById(@Path("id") id: Int): Response<Event>
+
+    @DELETE("api/events/{id}/likes")
+    suspend fun dislikeEventById(@Path("id") id: Int): Response<Event>
 
     //Users
     @GET("api/users/")
@@ -58,6 +65,14 @@ interface ApiService {
 
     @GET("api/users/{user_id}/")
     suspend fun getUserById(@Path("user_id") userId: Int): Response<User>
+
+    //Job
+    @GET("api/{user_id}/jobs/")
+    suspend fun getJobsByUserId(@Path("user_id") userId: Int): Response<List<Job>>
+    @POST("/api/my/jobs")
+    suspend fun saveJob(@Body job: Job) : Response<Job>
+    @DELETE("/api/my/jobs/{job_id}/")
+    suspend fun deleteJob(@Path("job_id") jobId: Int)
 
     //Auth
     @FormUrlEncoded

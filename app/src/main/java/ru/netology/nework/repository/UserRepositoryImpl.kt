@@ -82,4 +82,6 @@ class UserRepositoryImpl @Inject constructor(
         }
         return response.body() ?: throw ApiError(response.code(), response.message())
     }
+
+    override suspend fun isDbEmpty() = userDao.getRowCount() == 0
 }

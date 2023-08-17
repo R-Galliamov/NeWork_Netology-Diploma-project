@@ -1,4 +1,4 @@
-package ru.netology.nework.ui
+package ru.netology.nework.ui.events
 
 import android.os.Bundle
 import android.view.LayoutInflater

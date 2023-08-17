@@ -14,7 +14,7 @@ interface UserRepository {
     suspend fun signUpUser(
         regRequest: RegistrationRequest
     ): AuthState
-
     suspend fun getUserById(userId: Int): User
 
+    suspend fun isDbEmpty() : Boolean
 }

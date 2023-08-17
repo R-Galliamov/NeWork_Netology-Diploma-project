@@ -12,7 +12,6 @@ data class Post(
     val link: String? = null,
     val likeOwnerIds: List<Int>,
     val likeOwnerUsers: List<UserPreview?> = emptyList(),
-    val likesCount: Int = likeOwnerIds.size,
     val mentionIds: List<Int>,
     val mentionUsers: List<UserPreview?> = emptyList(),
     val mentionedMe: Boolean = false,

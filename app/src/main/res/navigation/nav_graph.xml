@@ -20,10 +20,16 @@
         <action
             android:id="@+id/action_holderFragment_to_newEventFragment"
             app:destination="@id/newEventFragment" />
+        <action
+            android:id="@+id/action_holderFragment_to_postFragment"
+            app:destination="@id/postFragment" />
+        <action
+            android:id="@+id/action_holderFragment_to_eventFragment"
+            app:destination="@id/eventFragment" />
     </fragment>
     <fragment
         android:id="@+id/newPostFragment"
-        android:name="ru.netology.nework.ui.NewPostFragment"
+        android:name="ru.netology.nework.ui.posts.NewPostFragment"
         android:label="NewPostFragment" />
     <fragment
         android:id="@+id/authFragment"
@@ -31,10 +37,36 @@
         android:label="AuthFragment" />
     <fragment
         android:id="@+id/userProfileFragment"
-        android:name="ru.netology.nework.ui.UserProfileFragment"
-        android:label="UserProfileFragment" />
+        android:name="ru.netology.nework.ui.users.UserProfileFragment"
+        android:label="UserProfileFragment" >
+        <action
+            android:id="@+id/action_userProfileFragment_to_postFragment"
+            app:destination="@id/postFragment" />
+        <action
+            android:id="@+id/action_userProfileFragment_to_eventFragment"
+            app:destination="@id/eventFragment" />
+        <action
+            android:id="@+id/action_userProfileFragment_self"
+            app:destination="@id/userProfileFragment" />
+    </fragment>
     <fragment
         android:id="@+id/newEventFragment"
-        android:name="ru.netology.nework.ui.NewEventFragment"
+        android:name="ru.netology.nework.ui.events.NewEventFragment"
         android:label="NewEventFragment" />
+    <fragment
+        android:id="@+id/postFragment"
+        android:name="ru.netology.nework.ui.posts.PostFragment"
+        android:label="PostFragment" >
+        <action
+            android:id="@+id/action_postFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/eventFragment"
+        android:name="ru.netology.nework.ui.events.EventFragment"
+        android:label="EventFragment" >
+        <action
+            android:id="@+id/action_eventFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
+    </fragment>
 </navigation>

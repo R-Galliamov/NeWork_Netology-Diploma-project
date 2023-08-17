@@ -1,7 +1,9 @@
-package ru.netology.nework.ui
+package ru.netology.nework.ui.posts
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -33,6 +35,21 @@ class NewPostFragment : Fragment() {
             val user = authViewModel.authenticatedUser.value
             avatar.loadCircleCropAvatar(user?.avatar.toString())
             userName.text = user?.name
+
+            editContent.requestFocus()
+
+            editContentContainer.setOnTouchListener { view, motionEvent ->
+                when (motionEvent.action) {
+                    MotionEvent.ACTION_BUTTON_PRESS -> {
+                        Log.d("App log", "touch scroll")
+                        true
+                    }
+
+                    else -> {
+                        false
+                    }
+                }
+            }
 
             addLinkButton.setOnClickListener {
 

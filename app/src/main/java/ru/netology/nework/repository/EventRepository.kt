@@ -5,6 +5,7 @@ import ru.netology.nework.dto.Event
 
 interface EventRepository {
     val data: Flow<List<Event>>
-
     suspend fun getAll()
+    suspend fun isDbEmpty() : Boolean
+    suspend fun onLike(event: Event) : Event
 }

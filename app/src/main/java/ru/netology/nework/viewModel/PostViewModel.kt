@@ -1,13 +1,16 @@
 package ru.netology.nework.viewModel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ru.netology.nework.dto.Post
+import ru.netology.nework.dto.User
 import ru.netology.nework.model.requestModel.PostRequest
 import javax.inject.Inject
 
 @HiltViewModel
-class PostViewModel @Inject constructor()   : ViewModel() {
+class PostViewModel @Inject constructor() : ViewModel() {
     private val emptyPost = PostRequest(content = "")
     private val edited = MutableLiveData(emptyPost)
 

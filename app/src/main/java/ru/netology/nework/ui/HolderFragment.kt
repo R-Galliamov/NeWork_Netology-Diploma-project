@@ -2,24 +2,24 @@ package ru.netology.nework.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
-import android.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.badge.ExperimentalBadgeUtils
-import okhttp3.internal.checkOffsetAndCount
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentHolderBinding
+import ru.netology.nework.ui.events.EventsFragment
+import ru.netology.nework.ui.posts.FeedFragment
+import ru.netology.nework.ui.users.UsersFragment
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.viewModel.AuthViewModel
+import ru.netology.nework.viewModel.NavStateViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 
 class HolderFragment : Fragment() {
@@ -30,6 +30,7 @@ class HolderFragment : Fragment() {
     private lateinit var badge: BadgeDrawable
     private val authViewModel: AuthViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
+    private val navStateViewModel: NavStateViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,7 +66,7 @@ class HolderFragment : Fragment() {
 
                 R.id.events -> {
                     childFragmentManager.beginTransaction()
-                        .replace(R.id.place_holder, EventFragment()).commit()
+                        .replace(R.id.place_holder, EventsFragment()).commit()
                     true
                 }
 
@@ -98,8 +99,9 @@ class HolderFragment : Fragment() {
         badge.number = 10
         BadgeUtils.attachBadgeDrawable(badge, binding.toolbar, R.id.notification_badge)
 
-        //TODO handle the returning from fullscreen fragments
-        childFragmentManager.beginTransaction().replace(R.id.place_holder, FeedFragment()).commit()
+
+        childFragmentManager.beginTransaction()
+            .replace(R.id.place_holder, navStateViewModel.getFragment()).commit()
     }
 
     private fun showCreateContentPopupMenu(view: View) {
