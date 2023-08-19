@@ -95,14 +95,32 @@
             android:src="@color/black"
             android:visibility="gone" />
 
+        <FrameLayout
+            android:id="@+id/videoAttachment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <VideoView
+                android:id="@+id/videoView"
+                android:layout_width="match_parent"
+                android:layout_height="200dp" />
+
+            <ImageView
+                android:id="@+id/playVideoButton"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:src="@drawable/play_icon" />
+        </FrameLayout>
+
         <LinearLayout
             android:id="@+id/playerAttachment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="10dp"
             android:gravity="center"
-            android:orientation="horizontal"
-            >
+            android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/playButton"
@@ -139,10 +157,10 @@
 
             <TextView
                 android:id="@+id/link"
-                android:textColor="?colorSecondary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
+                android:textColor="?colorSecondary"
                 tools:text="Link" />
 
         </LinearLayout>
@@ -162,11 +180,11 @@
                 android:src="@drawable/events_icon" />
 
             <TextView
-                android:textColor="@color/black"
                 android:id="@+id/datetime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
+                android:textColor="@color/black"
                 tools:text="Tomorrow, 20:00" />
         </LinearLayout>
 
@@ -186,10 +204,10 @@
 
             <TextView
                 android:id="@+id/coords"
-                android:textColor="@color/black"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
+                android:textColor="@color/black"
                 tools:text="Lat : Long" />
         </LinearLayout>
 

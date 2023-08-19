@@ -16,7 +16,7 @@ import ru.netology.nework.R
 import ru.netology.nework.adapter.UserAdapter
 import ru.netology.nework.databinding.FragmentEventsBinding
 import ru.netology.nework.dto.User
-import ru.netology.nework.service.MediaLifecycleObserver
+import ru.netology.nework.service.AudioLifecycleObserver
 import ru.netology.nework.viewModel.NavStateViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
@@ -32,7 +32,7 @@ class UsersFragment : Fragment() {
     private val navStateViewModel: NavStateViewModel by activityViewModels()
 
     @Inject
-    lateinit var mediaObserver: MediaLifecycleObserver
+    lateinit var mediaObserver: AudioLifecycleObserver
 
     override fun onCreateView(
         inflater: LayoutInflater,

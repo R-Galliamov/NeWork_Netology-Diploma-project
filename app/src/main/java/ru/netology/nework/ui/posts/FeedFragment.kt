@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -27,8 +28,8 @@ import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
 import ru.netology.nework.listeners.OnPostInteractionListener
-import ru.netology.nework.service.MediaLifecycleObserver
-import ru.netology.nework.viewModel.AuthViewModel
+import ru.netology.nework.service.AudioLifecycleObserver
+import ru.netology.nework.service.VideoPlayer
 import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.NavStateViewModel
 import ru.netology.nework.viewModel.UsersViewModel
@@ -46,7 +47,10 @@ class FeedFragment : Fragment() {
     private val navStateViewModel: NavStateViewModel by activityViewModels()
 
     @Inject
-    lateinit var mediaObserver: MediaLifecycleObserver
+    lateinit var audioObserver: AudioLifecycleObserver
+
+    @Inject
+    lateinit var videoPlayer: VideoPlayer
 
     private var postAdapter: PostAdapter? = null
 
@@ -62,7 +66,7 @@ class FeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycle.addObserver(mediaObserver)
+        lifecycle.addObserver(audioObserver)
         feedViewModel.loadPosts()
 
         binding.usersContainer.visibility = View.GONE
@@ -124,23 +128,33 @@ class FeedFragment : Fragment() {
 
             }
 
-            override fun onVideo() {
-
+            override fun onVideo(videoView: VideoView, video: Attachment) {
+                if (URLUtil.isValidUrl(video.url)) {
+                    videoPlayer.videoPlayerDelegate(videoView, video) {
+                        postAdapter?.notifyDataSetChanged()
+                    }
+                } else {
+                    Toast.makeText(
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
+
+            override fun isVideoPlaying(): Boolean = videoPlayer.isPlaying.value!!
 
             override fun onAudio(audio: Attachment, postId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
-                    mediaObserver.mediaPlayerDelegate(audio, postId) {
+                    audioObserver.mediaPlayerDelegate(audio, postId) {
                         postAdapter?.resetCurrentMediaId()
                         postAdapter?.notifyDataSetChanged()
                     }
 
                     viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
-                        while (mediaObserver.isPlaying) {
-                            val currentPosition = mediaObserver.getCurrentPosition()
+                        while (audioObserver.isPlaying) {
+                            val currentPosition = audioObserver.getCurrentPosition()
                             delay(100)
                             withContext(Dispatchers.Main) {
-                                val trackDuration = mediaObserver.getTracDuration()
+                                val trackDuration = audioObserver.getTracDuration()
                                 if (trackDuration != 0) {
                                     postAdapter?.setProgress((currentPosition * 100) / trackDuration)
                                 }
@@ -163,7 +177,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun isAudioPlaying(): Boolean {
-                return mediaObserver.isPlaying
+                return audioObserver.isPlaying
             }
         })
 
@@ -174,8 +188,7 @@ class FeedFragment : Fragment() {
             feedViewModel.loadPosts()
         }
 
-        feedViewModel.dataState.observe(viewLifecycleOwner)
-        { state ->
+        feedViewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progressContainer.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
             if (state.errorState) {

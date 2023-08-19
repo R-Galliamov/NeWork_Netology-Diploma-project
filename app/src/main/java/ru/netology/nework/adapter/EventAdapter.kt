@@ -34,6 +34,8 @@ class EventAdapter(private val onInteractionListener: OnEventInteractionListener
                 link.text = event.link.orEmpty()
                 coords.text = event.coords.let { "${it?.lat} : ${it?.long}" }
 
+                setupVideoPlayButton()
+
                 speakers.movementMethod = LinkMovementMethod.getInstance()
                 speakers.text = getSpannableBuilder(event.speakerIds, event)
 
@@ -92,34 +94,36 @@ class EventAdapter(private val onInteractionListener: OnEventInteractionListener
                     playButton.setImageResource(imageId)
                 }
 
-                if (event.attachment != null) {
-                    when (event.attachment.type) {
-                        Attachment.Type.IMAGE -> {
-                            imageAttachment.loadImageAttachment(event.attachment.url)
-                            imageAttachment.visibility = View.VISIBLE
-                            playerAttachment.visibility = View.GONE
-                        }
+                when (event.attachment?.type) {
+                    Attachment.Type.IMAGE -> {
+                        imageAttachment.loadImageAttachment(event.attachment.url)
+                        imageAttachment.visibility = View.VISIBLE
+                        playerAttachment.visibility = View.GONE
+                    }
 
-                        Attachment.Type.VIDEO -> {
-                            onInteractionListener.onVideo()
-                            imageAttachment.visibility = View.GONE
-                            playerAttachment.visibility = View.GONE
-                        }
+                    Attachment.Type.VIDEO -> {
+                        onInteractionListener.onVideo(binding.videoView, event.attachment)
+                        imageAttachment.visibility = View.GONE
+                        playerAttachment.visibility = View.GONE
+                    }
 
-                        Attachment.Type.AUDIO -> {
-                            playerAttachment.visibility = View.VISIBLE
-                            imageAttachment.visibility = View.GONE
-                            playButton.setOnClickListener {
-                                currentEventPosition = adapterPosition
-                                onInteractionListener.onAudio(event.attachment, event.id)
-                                notifyDataSetChanged()
-                            }
+                    Attachment.Type.AUDIO -> {
+                        playerAttachment.visibility = View.VISIBLE
+                        imageAttachment.visibility = View.GONE
+                        playButton.setOnClickListener {
+                            currentEventPosition = adapterPosition
+                            onInteractionListener.onAudio(event.attachment, event.id)
+                            removeVideoPlayButton()
                         }
                     }
-                } else {
-                    imageAttachment.visibility = View.GONE
-                    playerAttachment.visibility = View.GONE
+
+                    null -> {
+                        playerAttachment.visibility = View.GONE
+                        imageAttachment.visibility = View.GONE
+                        videoAttachment.visibility = View.GONE
+                    }
                 }
+
                 if (event.ownedByMe) {
                     menu.visibility = View.VISIBLE
                 } else {
@@ -132,6 +136,15 @@ class EventAdapter(private val onInteractionListener: OnEventInteractionListener
             val likeRes =
                 if (likedByMe) R.drawable.like_checked else R.drawable.like_unchecked
             binding.like.setImageResource(likeRes)
+        }
+
+        private fun setupVideoPlayButton() {
+            if (!onInteractionListener.isVideoPlaying()) R.drawable.play_icon
+            else binding.playVideoButton.visibility = View.GONE
+        }
+
+        private fun removeVideoPlayButton() {
+            binding.playVideoButton.visibility = View.GONE
         }
     }
 

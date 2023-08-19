@@ -24,7 +24,7 @@ import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.User
 import ru.netology.nework.listeners.OnEventInteractionListener
-import ru.netology.nework.service.MediaLifecycleObserver
+import ru.netology.nework.service.AudioLifecycleObserver
 import ru.netology.nework.viewModel.EventsViewModel
 import ru.netology.nework.viewModel.NavStateViewModel
 import ru.netology.nework.viewModel.UsersViewModel
@@ -42,7 +42,7 @@ class EventsFragment : Fragment() {
     private val navStateViewModel: NavStateViewModel by activityViewModels()
 
     @Inject
-    lateinit var mediaObserver: MediaLifecycleObserver
+    lateinit var mediaObserver: AudioLifecycleObserver
 
     private var adapter: EventAdapter? = null
 

@@ -120,6 +120,26 @@
                 android:textColor="@color/black"
                 tools:text="Some text for test" />
 
+            <FrameLayout
+                android:id="@+id/videoAttachment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+                <VideoView
+                    android:id="@+id/videoView"
+                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp" />
+
+                <ImageView
+                    android:id="@+id/playVideoButton"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/play_icon" />
+            </FrameLayout>
+
             <ImageView
                 android:id="@+id/imageAttachment"
                 android:layout_width="match_parent"

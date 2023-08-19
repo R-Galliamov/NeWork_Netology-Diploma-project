@@ -1,8 +1,8 @@
 package ru.netology.nework.listeners
 
+import android.widget.VideoView
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
-import ru.netology.nework.service.MediaLifecycleObserver
 
 interface OnPostInteractionListener {
     fun onLike(post: Post)
@@ -11,7 +11,9 @@ interface OnPostInteractionListener {
     fun onContent(post: Post)
     fun onLink(url: String)
     fun onImage()
-    fun onVideo()
+    fun onVideo(videoView: VideoView, video: Attachment)
+    fun isVideoPlaying(): Boolean
     fun onAudio(audio: Attachment, postId: Int)
     fun isAudioPlaying(): Boolean
+
 }

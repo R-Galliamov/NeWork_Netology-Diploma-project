@@ -49,6 +49,7 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
             setupLink(post)
             setupCoords(post)
             setupPlayButton(post)
+            setupVideoPlayButton()
             setupOnUserListeners(post)
             setupMentions(post)
             updateAudioProgress(post)
@@ -122,6 +123,15 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
             }
         }
 
+        private fun setupVideoPlayButton() {
+            if (!onInteractionListener.isVideoPlaying()) R.drawable.play_icon
+            else binding.playVideoButton.visibility = View.GONE
+        }
+
+        private fun removeVideoPlayButton() {
+            binding.playVideoButton.visibility = View.GONE
+        }
+
         private fun setupPlayButton(post: Post) {
             if (currentMediaId != post.id) {
                 binding.playButton.setImageResource(R.drawable.play_icon)
@@ -185,11 +195,15 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
                 when (attachment?.type) {
                     Attachment.Type.IMAGE -> {
                         imageAttachment.visibility = View.VISIBLE
+                        videoAttachment.visibility = View.GONE
+                        playerAttachment.visibility = View.GONE
                         imageAttachment.loadImageAttachment(attachment.url)
                     }
 
                     Attachment.Type.AUDIO -> {
                         playerAttachment.visibility = View.VISIBLE
+                        imageAttachment.visibility = View.GONE
+                        videoAttachment.visibility = View.GONE
                         playButton.setOnClickListener {
                             currentMediaId = post.id
                             onInteractionListener.onAudio(attachment, post.id)
@@ -198,14 +212,22 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
                     }
 
                     Attachment.Type.VIDEO -> {
-
+                        playerAttachment.visibility = View.GONE
+                        imageAttachment.visibility = View.GONE
+                        videoAttachment.visibility = View.VISIBLE
+                        videoAttachment.setOnClickListener {
+                            onInteractionListener.onVideo(videoView, attachment)
+                            removeVideoPlayButton()
+                        }
                     }
-
-                    null -> {}
+                    null -> {
+                        playerAttachment.visibility = View.GONE
+                        imageAttachment.visibility = View.GONE
+                        videoAttachment.visibility = View.GONE
+                    }
                 }
             }
         }
-
 
 
         private fun updateAudioProgress(post: Post) {

@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -29,7 +30,8 @@ import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
 import ru.netology.nework.listeners.OnPostInteractionListener
-import ru.netology.nework.service.MediaLifecycleObserver
+import ru.netology.nework.service.AudioLifecycleObserver
+import ru.netology.nework.service.VideoPlayer
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
 import ru.netology.nework.viewModel.FeedViewModel
@@ -44,13 +46,15 @@ class PostFragment : Fragment() {
         get() = _binding!!
     private val feedViewModel: FeedViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
+
     @Inject
-    lateinit var mediaObserver: MediaLifecycleObserver
+    lateinit var audioObserver: AudioLifecycleObserver
+
+    @Inject
+    lateinit var videoPlayer: VideoPlayer
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentPostBinding.inflate(inflater, container, false)
         return binding.root
@@ -59,7 +63,7 @@ class PostFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycle.addObserver(mediaObserver)
+        lifecycle.addObserver(audioObserver)
 
         val usersAdapter = UserAdapter(object : UserAdapter.OnInteractionListener {
             override fun onItem(user: User) {
@@ -98,9 +102,7 @@ class PostFragment : Fragment() {
                     startActivity(intent)
                 } else {
                     Toast.makeText(
-                        requireContext(),
-                        getString(R.string.invalid_link),
-                        Toast.LENGTH_SHORT
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
                     ).show()
                 }
             }
@@ -109,26 +111,35 @@ class PostFragment : Fragment() {
             }
 
             override fun onImage() {
-                TODO("Not yet implemented")
-            }
-
-            override fun onVideo() {
 
             }
+
+            override fun onVideo(videoView: VideoView, video: Attachment) {
+                if (URLUtil.isValidUrl(video.url)) {
+                    videoPlayer.videoPlayerDelegate(videoView, video) {
+                    }
+                } else {
+                    Toast.makeText(
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            override fun isVideoPlaying(): Boolean = videoPlayer.isPlaying.value!!
 
             override fun onAudio(audio: Attachment, postId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
-                    mediaObserver.mediaPlayerDelegate(audio, postId) {
-                        updatePlayerUI()
+                    audioObserver.mediaPlayerDelegate(audio, postId) {
+                        updateAudioPlayerUI()
                         binding.progressBar.progress = 0
                     }
 
                     viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
-                        while (mediaObserver.isPlaying) {
-                            val currentPosition = mediaObserver.getCurrentPosition()
+                        while (audioObserver.isPlaying) {
+                            val currentPosition = audioObserver.getCurrentPosition()
                             delay(100)
                             withContext(Dispatchers.Main) {
-                                val trackDuration = mediaObserver.getTracDuration()
+                                val trackDuration = audioObserver.getTracDuration()
                                 if (trackDuration != 0) {
                                     binding.progressBar.progress =
                                         (currentPosition * 100) / trackDuration
@@ -138,15 +149,13 @@ class PostFragment : Fragment() {
                     }
                 } else {
                     Toast.makeText(
-                        requireContext(),
-                        getString(R.string.invalid_link),
-                        Toast.LENGTH_SHORT
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
                     ).show()
                 }
             }
 
             override fun isAudioPlaying(): Boolean {
-                return mediaObserver.isPlaying
+                return audioObserver.isPlaying
             }
         }
 
@@ -172,8 +181,7 @@ class PostFragment : Fragment() {
                         }
                     }
 
-                    val userPreview =
-                        post.users.filterKeys { it.toInt() == userId }.values.first()
+                    val userPreview = post.users.filterKeys { it.toInt() == userId }.values.first()
                     spannableStringBuilder.append(
                         userPreview.name,
                         clickableSpan,
@@ -228,26 +236,42 @@ class PostFragment : Fragment() {
                             imageAttachment.loadImageAttachment(post.attachment.url)
                             imageAttachment.visibility = View.VISIBLE
                             playerAttachment.visibility = View.GONE
+                            videoAttachment.visibility = View.GONE
+
                         }
 
                         Attachment.Type.VIDEO -> {
-                            onInteractionListener.onVideo()
+                            videoAttachment.visibility = View.VISIBLE
                             imageAttachment.visibility = View.GONE
                             playerAttachment.visibility = View.GONE
+
+                            videoAttachment.setOnClickListener {
+                                onInteractionListener.onVideo(
+                                    binding.videoView,
+                                    post.attachment
+                                )
+                                videoPlayer.isPlaying.observe(viewLifecycleOwner) {
+                                    binding.playVideoButton.visibility =
+                                        if (it) View.GONE else View.VISIBLE
+                                }
+                            }
                         }
 
                         Attachment.Type.AUDIO -> {
+                            videoAttachment.visibility = View.GONE
                             playerAttachment.visibility = View.VISIBLE
                             imageAttachment.visibility = View.GONE
+
                             playButton.setOnClickListener {
                                 onInteractionListener.onAudio(post.attachment, post.id)
-                                updatePlayerUI()
+                                updateAudioPlayerUI()
                             }
                         }
                     }
                 } else {
                     imageAttachment.visibility = View.GONE
                     playerAttachment.visibility = View.GONE
+                    videoAttachment.visibility = View.GONE
                 }
                 if (post.ownedByMe) {
                     menu.visibility = View.VISIBLE
@@ -267,16 +291,13 @@ class PostFragment : Fragment() {
     }
 
     private fun updateLikeUi(likedByMe: Boolean) {
-        val likeRes =
-            if (likedByMe) R.drawable.like_checked else R.drawable.like_unchecked
+        val likeRes = if (likedByMe) R.drawable.like_checked else R.drawable.like_unchecked
         binding.like.setImageResource(likeRes)
     }
 
 
-    private fun updatePlayerUI() {
-        val imageId =
-            if (mediaObserver.isPlaying) R.drawable.pause_icon else
-                R.drawable.play_icon
+    private fun updateAudioPlayerUI() {
+        val imageId = if (audioObserver.isPlaying) R.drawable.pause_icon else R.drawable.play_icon
         binding.playButton.setImageResource(imageId)
     }
 

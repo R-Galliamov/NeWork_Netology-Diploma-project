@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -23,7 +24,8 @@ import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
 import ru.netology.nework.listeners.OnPostInteractionListener
-import ru.netology.nework.service.MediaLifecycleObserver
+import ru.netology.nework.service.AudioLifecycleObserver
+import ru.netology.nework.service.VideoPlayer
 import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
@@ -39,7 +41,10 @@ class UserPostsFragment : Fragment() {
     private val usersViewModel: UsersViewModel by activityViewModels()
 
     @Inject
-    lateinit var mediaObserver: MediaLifecycleObserver
+    lateinit var mediaObserver: AudioLifecycleObserver
+
+    @Inject
+    lateinit var videoPlayer: VideoPlayer
 
     private var adapter: PostAdapter? = null
 
@@ -118,9 +123,19 @@ class UserPostsFragment : Fragment() {
 
             }
 
-            override fun onVideo() {
-
+            override fun onVideo(videoView: VideoView, video: Attachment) {
+                if (URLUtil.isValidUrl(video.url)) {
+                    videoPlayer.videoPlayerDelegate(videoView, video) {
+                        adapter?.notifyDataSetChanged()
+                    }
+                } else {
+                    Toast.makeText(
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
+
+            override fun isVideoPlaying(): Boolean = videoPlayer.isPlaying.value!!
 
             override fun onAudio(audio: Attachment, postId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
@@ -173,10 +188,6 @@ class UserPostsFragment : Fragment() {
                 }
             }
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
     }
 
     override fun onDestroyView() {

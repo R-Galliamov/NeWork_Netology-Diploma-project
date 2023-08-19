@@ -14,15 +14,13 @@ import ru.netology.nework.adapter.JobsAdapter
 import ru.netology.nework.adapter.UserWallAdapter
 import ru.netology.nework.databinding.FragmentUserProfileBinding
 import ru.netology.nework.dto.Job
-import ru.netology.nework.dto.User
-import ru.netology.nework.service.MediaLifecycleObserver
+import ru.netology.nework.service.AudioLifecycleObserver
 import ru.netology.nework.ui.events.UserEventsFragment
 import ru.netology.nework.ui.posts.UserPostsFragment
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.viewModel.AuthViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @AndroidEntryPoint
 class UserProfileFragment : Fragment() {
@@ -34,7 +32,7 @@ class UserProfileFragment : Fragment() {
     private val authViewModel: AuthViewModel by activityViewModels()
 
     @Inject
-    lateinit var mediaObserver: MediaLifecycleObserver
+    lateinit var mediaObserver: AudioLifecycleObserver
 
     override fun onCreateView(
         inflater: LayoutInflater,

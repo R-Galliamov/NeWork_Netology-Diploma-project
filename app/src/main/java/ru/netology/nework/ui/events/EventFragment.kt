@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -29,7 +30,8 @@ import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.User
 import ru.netology.nework.listeners.OnEventInteractionListener
-import ru.netology.nework.service.MediaLifecycleObserver
+import ru.netology.nework.service.AudioLifecycleObserver
+import ru.netology.nework.service.VideoPlayer
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
 import ru.netology.nework.viewModel.EventsViewModel
@@ -45,8 +47,12 @@ class EventFragment : Fragment() {
     private val eventsViewModel: EventsViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
     lateinit var onInteractionListener: OnEventInteractionListener
+
     @Inject
-    lateinit var mediaObserver: MediaLifecycleObserver
+    lateinit var mediaObserver: AudioLifecycleObserver
+
+    @Inject
+    lateinit var videoPlayer: VideoPlayer
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -113,9 +119,17 @@ class EventFragment : Fragment() {
 
             }
 
-            override fun onVideo() {
-
+            override fun onVideo(videoView: VideoView, video: Attachment) {
+                if (URLUtil.isValidUrl(video.url)) {
+                    videoPlayer.videoPlayerDelegate(videoView, video) {
+                    }
+                } else {
+                    Toast.makeText(
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
+
 
             override fun onAudio(audio: Attachment, eventId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
@@ -213,15 +227,28 @@ class EventFragment : Fragment() {
                                 imageAttachment.loadImageAttachment(event.attachment.url)
                                 imageAttachment.visibility = View.VISIBLE
                                 playerAttachment.visibility = View.GONE
+                                videoAttachment.visibility = View.GONE
                             }
 
                             Attachment.Type.VIDEO -> {
-                                onInteractionListener.onVideo()
+                                videoAttachment.visibility = View.VISIBLE
                                 imageAttachment.visibility = View.GONE
                                 playerAttachment.visibility = View.GONE
+
+                                playVideoButton.setOnClickListener {
+                                    onInteractionListener.onVideo(
+                                        binding.videoView,
+                                        event.attachment
+                                    )
+                                    videoPlayer.isPlaying.observe(viewLifecycleOwner) {
+                                        binding.playVideoButton.visibility =
+                                            if (it) View.GONE else View.VISIBLE
+                                    }
+                                }
                             }
 
                             Attachment.Type.AUDIO -> {
+                                videoAttachment.visibility = View.GONE
                                 playerAttachment.visibility = View.VISIBLE
                                 imageAttachment.visibility = View.GONE
                                 playButton.setOnClickListener {
@@ -231,6 +258,7 @@ class EventFragment : Fragment() {
                             }
                         }
                     } else {
+                        videoAttachment.visibility = View.GONE
                         imageAttachment.visibility = View.GONE
                         playerAttachment.visibility = View.GONE
                     }
