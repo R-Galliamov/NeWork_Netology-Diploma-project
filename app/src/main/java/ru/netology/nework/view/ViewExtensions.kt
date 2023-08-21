@@ -4,6 +4,7 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.google.android.exoplayer2.ui.PlayerView
 import ru.netology.nework.R
 
 fun ImageView.loadAvatar(url: String, vararg transforms: BitmapTransformation = emptyArray()) =

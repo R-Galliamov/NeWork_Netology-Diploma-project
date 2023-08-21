@@ -10,7 +10,7 @@
 
     <item
         android:id="@+id/create_content"
-        android:icon="@drawable/add_icon"
+        android:icon="@drawable/add_icon_circle"
         android:title="Create post/event"
         app:showAsAction="always" />
 

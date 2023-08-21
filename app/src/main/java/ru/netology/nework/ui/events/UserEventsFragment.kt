@@ -8,11 +8,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.Toast
-import android.widget.VideoView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -23,9 +24,10 @@ import ru.netology.nework.databinding.FragmentUserEventsBinding
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.User
+import ru.netology.nework.error.ErrorHandler
 import ru.netology.nework.listeners.OnEventInteractionListener
-import ru.netology.nework.service.AudioLifecycleObserver
-import ru.netology.nework.service.VideoPlayer
+import ru.netology.nework.player.AudioLifecycleObserver
+import ru.netology.nework.player.VideoLifecycleObserver
 import ru.netology.nework.viewModel.EventsViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
@@ -41,10 +43,13 @@ class UserEventsFragment : Fragment() {
     private val usersViewModel: UsersViewModel by activityViewModels()
 
     @Inject
-    lateinit var mediaObserver: AudioLifecycleObserver
+    lateinit var audioObserver: AudioLifecycleObserver
 
     @Inject
-    lateinit var videoPlayer: VideoPlayer
+    lateinit var videoObserver: VideoLifecycleObserver
+
+    @Inject
+    lateinit var videoLifecycleObserver: VideoLifecycleObserver
     private var adapter: EventAdapter? = null
 
     override fun onCreateView(
@@ -59,7 +64,7 @@ class UserEventsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycle.addObserver(mediaObserver)
+        lifecycle.addObserver(audioObserver)
 
         binding.usersContainer.visibility = View.GONE
         val usersRecyclerView = binding.recyclerViewUsers
@@ -122,10 +127,9 @@ class UserEventsFragment : Fragment() {
 
             }
 
-            override fun onVideo(videoView: VideoView, video: Attachment) {
+            override fun onVideo(playerView: PlayerView, video: Attachment, eventId: Int) {
                 if (URLUtil.isValidUrl(video.url)) {
-                    videoPlayer.videoPlayerDelegate(videoView, video) {
-                    }
+                    videoObserver.videoPlayerDelegate(playerView, video, eventId)
                 } else {
                     Toast.makeText(
                         requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
@@ -133,12 +137,9 @@ class UserEventsFragment : Fragment() {
                 }
             }
 
-            override fun isVideoPlaying(): Boolean = videoPlayer.isPlaying.value!!
-
-
             override fun onAudio(audio: Attachment, eventId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
-                    mediaObserver.mediaPlayerDelegate(audio, eventId) {
+                    audioObserver.mediaPlayerDelegate(audio, eventId) {
                         adapter?.notifyDataSetChanged()
                     }
                 } else {
@@ -149,11 +150,8 @@ class UserEventsFragment : Fragment() {
                     ).show()
                 }
             }
+        }, audioObserver, videoObserver)
 
-            override fun isAudioPlaying(): Boolean {
-                return mediaObserver.isPlaying
-            }
-        })
         val recyclerView = binding.recyclerView
         recyclerView.adapter = adapter
         eventsViewModel.dataState.observe(viewLifecycleOwner) { state ->
@@ -183,6 +181,17 @@ class UserEventsFragment : Fragment() {
 
         eventsViewModel.userEvents.observe(viewLifecycleOwner) { events ->
             adapter?.submitList(events)
+        }
+
+        eventsViewModel.dataState.observe(viewLifecycleOwner) { state ->
+            if (state.errorState) {
+                val errorDescription = ErrorHandler.getApiErrorDescriptor(state.errorObject)
+                Toast.makeText(
+                    requireContext(),
+                    errorDescription,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 

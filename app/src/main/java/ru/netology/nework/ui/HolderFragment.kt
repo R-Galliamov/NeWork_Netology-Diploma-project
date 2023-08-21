@@ -82,6 +82,7 @@ class HolderFragment : Fragment() {
 
         binding.avatar.setOnClickListener {
             if (authViewModel.authenticated) {
+                usersViewModel.setCurrentUser(authViewModel.authenticatedUser.value!!)
                 findNavController().navigate(R.id.action_holderFragment_to_userProfileFragment)
             } else {
                 findNavController().navigate(R.id.action_holderFragment_to_authFragment)

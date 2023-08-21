@@ -43,6 +43,9 @@ interface ApiService {
     @GET("api/posts/")
     suspend fun getAllPosts(): Response<List<Post>>
 
+    @GET("api/posts/{id}/newer")
+    suspend fun getNewerPosts(@Path("id") id: Int): Response<List<Post>>
+
     @POST("api/posts/{id}/likes/")
     suspend fun likePostById(@Path("id") id: Int): Response<Post>
 
@@ -52,6 +55,9 @@ interface ApiService {
     //Events
     @GET("api/events/")
     suspend fun getAllEvents(): Response<List<Event>>
+
+    @GET("api/events/{id}/newer")
+    suspend fun getNewerEvents(@Path("id") id: Int): Response<List<Event>>
 
     @POST("api/events/{id}/likes/")
     suspend fun likeEventById(@Path("id") id: Int): Response<Event>
@@ -69,8 +75,10 @@ interface ApiService {
     //Job
     @GET("api/{user_id}/jobs/")
     suspend fun getJobsByUserId(@Path("user_id") userId: Int): Response<List<Job>>
+
     @POST("/api/my/jobs")
-    suspend fun saveJob(@Body job: Job) : Response<Job>
+    suspend fun saveJob(@Body job: Job): Response<Job>
+
     @DELETE("/api/my/jobs/{job_id}/")
     suspend fun deleteJob(@Path("job_id") jobId: Int)
 

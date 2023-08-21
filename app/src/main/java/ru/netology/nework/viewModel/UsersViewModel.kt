@@ -20,7 +20,6 @@ import javax.inject.Inject
 class UsersViewModel @Inject constructor(
     private val usersRepository: UserRepository,
     private val jobRepository: JobRepository,
-    appAuth: AppAuth
 ) :
     ViewModel() {
     val users: LiveData<List<User>> = usersRepository.data.asLiveData()
@@ -43,7 +42,10 @@ class UsersViewModel @Inject constructor(
         }
         _currentUser.value = user
         viewModelScope.launch(Dispatchers.IO) {
-            jobRepository.getJobs(user.id)
+            val userJobs = jobRepository.getJobs(user.id)
+            withContext(Dispatchers.Main) {
+                _currentUser.value = user.copy(jobs = userJobs)
+            }
         }
     }
 

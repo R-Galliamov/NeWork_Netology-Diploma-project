@@ -5,26 +5,41 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import ru.netology.nework.R
 import ru.netology.nework.databinding.JobItemBinding
-import ru.netology.nework.databinding.UserItemBinding
 import ru.netology.nework.dto.Job
-import ru.netology.nework.dto.User
-import ru.netology.nework.view.loadCircleCropAvatar
 
-class JobsAdapter(private val onInteractionListener: OnInteractionListener) :
+class JobsAdapter :
     ListAdapter<Job, JobsAdapter.JobsViewHolder>(JobsDiffCallback()) {
 
     interface OnInteractionListener {
         fun onItem(job: Job)
     }
 
-    inner class JobsViewHolder(private val binding: JobItemBinding) : ViewHolder(binding.root) {
+    inner class JobsViewHolder(private val binding: JobItemBinding) :
+        ViewHolder(binding.root) {
         fun bind(job: Job) {
             binding.apply {
-                text.text = job.name
-            }
-            itemView.setOnClickListener {
-                onInteractionListener.onItem(getItem(adapterPosition))
+                val textBuilder = StringBuilder()
+                textBuilder.append(
+                    itemView.context.getString(
+                        R.string.job_preview,
+                        job.position,
+                        job.name
+                    )
+                )
+                textBuilder.append(" ")
+                textBuilder.append(itemView.context.getString(R.string.from_date, job.start))
+                if (!job.link.isNullOrBlank()) {
+                    textBuilder.append(itemView.context.getString(R.string.to_date, job.finish))
+                }
+                textBuilder.append(".")
+
+                text.text = textBuilder
+                if (!job.link.isNullOrBlank()) {
+                    link.text = job.link
+                }
+
             }
         }
     }

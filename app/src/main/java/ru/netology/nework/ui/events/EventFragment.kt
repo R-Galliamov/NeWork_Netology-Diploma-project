@@ -12,11 +12,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.Toast
-import android.widget.VideoView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.exoplayer2.ui.PlayerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -30,8 +30,8 @@ import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.User
 import ru.netology.nework.listeners.OnEventInteractionListener
-import ru.netology.nework.service.AudioLifecycleObserver
-import ru.netology.nework.service.VideoPlayer
+import ru.netology.nework.player.AudioLifecycleObserver
+import ru.netology.nework.player.VideoLifecycleObserver
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
 import ru.netology.nework.viewModel.EventsViewModel
@@ -49,10 +49,13 @@ class EventFragment : Fragment() {
     lateinit var onInteractionListener: OnEventInteractionListener
 
     @Inject
-    lateinit var mediaObserver: AudioLifecycleObserver
+    lateinit var audioObserver: AudioLifecycleObserver
 
     @Inject
-    lateinit var videoPlayer: VideoPlayer
+    lateinit var videoObserver: VideoLifecycleObserver
+
+    @Inject
+    lateinit var videoLifecycleObserver: VideoLifecycleObserver
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -66,7 +69,8 @@ class EventFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycle.addObserver(mediaObserver)
+        lifecycle.addObserver(audioObserver)
+        lifecycle.addObserver(videoObserver)
 
         val usersAdapter = UserAdapter(object : UserAdapter.OnInteractionListener {
             override fun onItem(user: User) {
@@ -119,10 +123,9 @@ class EventFragment : Fragment() {
 
             }
 
-            override fun onVideo(videoView: VideoView, video: Attachment) {
+            override fun onVideo(playerView: PlayerView, video: Attachment, postId: Int) {
                 if (URLUtil.isValidUrl(video.url)) {
-                    videoPlayer.videoPlayerDelegate(videoView, video) {
-                    }
+                    videoObserver.videoPlayerDelegate(playerView, video, postId)
                 } else {
                     Toast.makeText(
                         requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
@@ -130,20 +133,19 @@ class EventFragment : Fragment() {
                 }
             }
 
-
             override fun onAudio(audio: Attachment, eventId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
-                    mediaObserver.mediaPlayerDelegate(audio, eventId) {
+                    audioObserver.mediaPlayerDelegate(audio, eventId) {
                         updatePlayerUI()
                         binding.progressBar.progress = 0
                     }
 
                     viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
-                        while (mediaObserver.isPlaying) {
-                            val currentPosition = mediaObserver.getCurrentPosition()
+                        while (audioObserver.isPlaying) {
+                            val currentPosition = audioObserver.getCurrentPosition()
                             delay(100)
                             withContext(Dispatchers.Main) {
-                                val trackDuration = mediaObserver.getTracDuration()
+                                val trackDuration = audioObserver.getTracDuration()
                                 if (trackDuration != 0) {
                                     binding.progressBar.progress =
                                         (currentPosition * 100) / trackDuration
@@ -159,121 +161,168 @@ class EventFragment : Fragment() {
                     ).show()
                 }
             }
-
-            override fun isAudioPlaying(): Boolean {
-                return mediaObserver.isPlaying
-            }
         }
 
         eventsViewModel.currentEvent.observe(viewLifecycleOwner) { event ->
-            if (event != null) {
-                binding.apply {
-                    authorName.text = event.authorId.toString()
-                    authorJob.text = event.authorJob ?: ""
-                    authorName.text = event.author
-                    content.text = event.content
-                    link.text = event.link.orEmpty()
-                    coords.text = event.coords.let { "${it?.lat} : ${it?.long}" }
+            setupUserData(event)
+            setupContent(event)
+            setupLikes(event)
+            setupOnUser(event)
+            setupLink(event)
+            setupSpeakers(event)
+            setupParticipants(event)
+            setupCoords(event)
+            setupDatetime(event)
+            setupAttachments(event)
+            setupEventMenu(event)
 
-                    speakers.movementMethod = LinkMovementMethod.getInstance()
-                    speakers.text = getSpannableBuilder(event.speakerIds, event)
+            binding.backButton.setOnClickListener {
+                findNavController().navigateUp()
+            }
+        }
+    }
 
-                    participants.movementMethod = LinkMovementMethod.getInstance()
-                    participants.text = getSpannableBuilder(event.participantsIds, event)
+    private fun setupUserData(event: Event) {
+        with(binding) {
+            authorName.text = event.authorId.toString()
+            authorJob.text = event.authorJob ?: ""
+            authorName.text = event.author
+            authorAvatar.loadCircleCropAvatar(event.authorAvatar.toString())
+        }
+    }
 
-                    linkContainer.visibility =
-                        if (event.link.isNullOrBlank()) View.GONE else View.VISIBLE
-                    coordsContainer.visibility =
-                        if (event.coords == null) View.GONE else View.VISIBLE
-                    speakersContainer.visibility =
-                        if (event.speakerIds.isEmpty()) View.GONE else View.VISIBLE
-                    participantsContainer.visibility =
-                        if (event.participantsIds.isEmpty()) View.GONE else View.VISIBLE
-                    val likedByMe = event.likedByMe
-                    updateLikeUi(likedByMe)
-                    like.setOnClickListener {
-                        onInteractionListener.onLike(event)
-                    }
-                    like.setOnLongClickListener {
-                        onInteractionListener.onLikeLongClick(event.likeOwnerIds)
-                        true
-                    }
-                    if (event.likeOwnerIds.isEmpty()) {
-                        likeCount.visibility = View.GONE
-                    } else {
-                        likeCount.visibility = View.VISIBLE
-                        likeCount.text = event.likeOwnerIds.size.toString()
-                    }
+    private fun setupContent(event: Event) {
+        binding.content.text = event.content
+    }
 
-                    authorAvatar.loadCircleCropAvatar(event.authorAvatar.toString())
-                    authorAvatar.setOnClickListener {
-                        onInteractionListener.onUser(event.authorId)
-                    }
-                    authorName.setOnClickListener {
-                        onInteractionListener.onUser(event.authorId)
-                    }
-                    authorJob.setOnClickListener {
-                        onInteractionListener.onUser(event.authorId)
-                    }
-                    link.setOnClickListener {
-                        onInteractionListener.onLink(event.link.toString())
-                    }
-                    date.text = DateTimeConverter.publishedToUIDate(event.published)
-                    time.text = DateTimeConverter.publishedToUiTime(event.published)
-                    datetime.text = DateTimeConverter.datetimeToUiDatetime(event.datetime)
-                    if (event.attachment != null) {
-                        when (event.attachment.type) {
-                            Attachment.Type.IMAGE -> {
-                                imageAttachment.loadImageAttachment(event.attachment.url)
-                                imageAttachment.visibility = View.VISIBLE
-                                playerAttachment.visibility = View.GONE
-                                videoAttachment.visibility = View.GONE
-                            }
+    private fun setupLikes(event: Event) {
+        val likeRes = if (event.likedByMe) R.drawable.like_checked else R.drawable.like_unchecked
+        binding.like.setImageResource(likeRes)
 
-                            Attachment.Type.VIDEO -> {
-                                videoAttachment.visibility = View.VISIBLE
-                                imageAttachment.visibility = View.GONE
-                                playerAttachment.visibility = View.GONE
-
-                                playVideoButton.setOnClickListener {
-                                    onInteractionListener.onVideo(
-                                        binding.videoView,
-                                        event.attachment
-                                    )
-                                    videoPlayer.isPlaying.observe(viewLifecycleOwner) {
-                                        binding.playVideoButton.visibility =
-                                            if (it) View.GONE else View.VISIBLE
-                                    }
-                                }
-                            }
-
-                            Attachment.Type.AUDIO -> {
-                                videoAttachment.visibility = View.GONE
-                                playerAttachment.visibility = View.VISIBLE
-                                imageAttachment.visibility = View.GONE
-                                playButton.setOnClickListener {
-                                    onInteractionListener.onAudio(event.attachment, event.id)
-                                    updatePlayerUI()
-                                }
-                            }
-                        }
-                    } else {
-                        videoAttachment.visibility = View.GONE
-                        imageAttachment.visibility = View.GONE
-                        playerAttachment.visibility = View.GONE
-                    }
-                    if (event.ownedByMe) {
-                        menu.visibility = View.VISIBLE
-                    } else {
-                        menu.visibility = View.GONE
-                    }
-                }
+        with(binding) {
+            like.setOnClickListener {
+                onInteractionListener.onLike(event)
+            }
+            like.setOnLongClickListener {
+                onInteractionListener.onLikeLongClick(event.likeOwnerIds)
+                true
             }
 
+            if (event.likeOwnerIds.isEmpty()) {
+                likeCount.visibility = View.GONE
+            } else {
+                likeCount.visibility = View.VISIBLE
+                likeCount.text = event.likeOwnerIds.size.toString()
+            }
         }
+    }
 
-        binding.backButton.setOnClickListener {
-            findNavController().navigateUp()
+    private fun setupParticipants(event: Event) {
+        with(binding) {
+            participants.movementMethod = LinkMovementMethod.getInstance()
+            participants.text = getSpannableBuilder(event.participantsIds, event)
+            participantsContainer.visibility =
+                if (event.participantsIds.isEmpty()) View.GONE else View.VISIBLE
+        }
+    }
+
+    private fun setupAttachments(event: Event) {
+        with(binding) {
+            when (event.attachment?.type) {
+                Attachment.Type.IMAGE -> {
+                    imageAttachment.visibility = View.VISIBLE
+                    audioAttachment.visibility = View.GONE
+                    videoAttachment.visibility = View.GONE
+                    imageAttachment.loadImageAttachment(event.attachment.url)
+                }
+
+                Attachment.Type.VIDEO -> {
+                    videoAttachment.visibility = View.VISIBLE
+                    imageAttachment.visibility = View.GONE
+                    audioAttachment.visibility = View.GONE
+
+                    if (videoObserver.getSettledVideoId() != event.id) {
+                        thumbnail.visibility = View.VISIBLE
+                        videoPlayerView.visibility = View.GONE
+                    }
+                    thumbnail.loadImageAttachment(event.attachment.url)
+                    videoAttachment.setOnClickListener {
+                        thumbnail.visibility = View.GONE
+                        videoPlayerView.visibility = View.VISIBLE
+                        onInteractionListener.onVideo(
+                            binding.videoPlayerView,
+                            event.attachment,
+                            event.id
+                        )
+                    }
+                }
+
+                Attachment.Type.AUDIO -> {
+                    videoAttachment.visibility = View.GONE
+                    audioAttachment.visibility = View.VISIBLE
+                    imageAttachment.visibility = View.GONE
+                    playButton.setOnClickListener {
+                        onInteractionListener.onAudio(event.attachment, event.id)
+                        updatePlayerUI()
+                    }
+                }
+
+                null -> {
+                    videoAttachment.visibility = View.GONE
+                    imageAttachment.visibility = View.GONE
+                    audioAttachment.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    private fun setupOnUser(event: Event) {
+        with(binding) {
+            authorAvatar.setOnClickListener {
+                onInteractionListener.onUser(event.authorId)
+            }
+            authorName.setOnClickListener {
+                onInteractionListener.onUser(event.authorId)
+            }
+            authorJob.setOnClickListener {
+                onInteractionListener.onUser(event.authorId)
+            }
+        }
+    }
+
+    private fun setupLink(event: Event) {
+        with(binding) {
+            linkContainer.visibility =
+                if (event.link.isNullOrBlank()) View.GONE else View.VISIBLE
+            link.setOnClickListener {
+                onInteractionListener.onLink(event.link.toString())
+            }
+            link.text = event.link.orEmpty()
+        }
+    }
+
+    private fun setupSpeakers(event: Event) {
+        with(binding) {
+            speakers.movementMethod = LinkMovementMethod.getInstance()
+            speakers.text = getSpannableBuilder(event.speakerIds, event)
+            speakersContainer.visibility =
+                if (event.speakerIds.isEmpty()) View.GONE else View.VISIBLE
+        }
+    }
+
+    private fun setupEventMenu(event: Event) {
+        if (event.ownedByMe) {
+            binding.menu.visibility = View.VISIBLE
+        } else {
+            binding.menu.visibility = View.GONE
+        }
+    }
+
+    private fun setupDatetime(event: Event) {
+        with(binding) {
+            date.text = DateTimeConverter.publishedToUIDate(event.published)
+            time.text = DateTimeConverter.publishedToUiTime(event.published)
+            datetime.text = DateTimeConverter.datetimeToUiDatetime(event.datetime)
         }
     }
 
@@ -305,15 +354,16 @@ class EventFragment : Fragment() {
         return spannableStringBuilder
     }
 
-    private fun updateLikeUi(likedByMe: Boolean) {
-        val likeRes =
-            if (likedByMe) R.drawable.like_checked else R.drawable.like_unchecked
-        binding.like.setImageResource(likeRes)
+    private fun setupCoords(event: Event) {
+        with(binding) {
+            coordsContainer.visibility = if (event.coords == null) View.GONE else View.VISIBLE
+            coords.text = event.coords.let { "${it?.lat} : ${it?.long}" }
+        }
     }
 
     private fun updatePlayerUI() {
         val imageId =
-            if (mediaObserver.isPlaying) R.drawable.pause_icon else
+            if (audioObserver.isPlaying) R.drawable.pause_icon else
                 R.drawable.play_icon
         binding.playButton.setImageResource(imageId)
     }

@@ -17,10 +17,16 @@ import ru.netology.nework.databinding.PostItemBinding
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
 import ru.netology.nework.listeners.OnPostInteractionListener
+import ru.netology.nework.player.AudioPlayer
+import ru.netology.nework.player.VideoPlayer
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
 
-class PostAdapter(private val onInteractionListener: OnPostInteractionListener) :
+class PostAdapter(
+    private val onInteractionListener: OnPostInteractionListener,
+    private val audioPlayer: AudioPlayer,
+    private val videoPlayer: VideoPlayer
+) :
     ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
     private var currentMediaId = -1
@@ -50,10 +56,10 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
             setupCoords(post)
             setupPlayButton(post)
             setupVideoPlayButton()
-            setupOnUserListeners(post)
+            setupOnUser(post)
             setupMentions(post)
             updateAudioProgress(post)
-            setupLikes(post.likedByMe, post)
+            setupLikes(post)
             setupDateTime(post)
             setupAttachments(post)
             setupMenu(post)
@@ -96,7 +102,7 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
             }
         }
 
-        private fun setupOnUserListeners(post: Post) {
+        private fun setupOnUser(post: Post) {
             binding.apply {
                 authorAvatar.setOnClickListener {
                     onInteractionListener.onUser(post.authorId)
@@ -124,12 +130,7 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
         }
 
         private fun setupVideoPlayButton() {
-            if (!onInteractionListener.isVideoPlaying()) R.drawable.play_icon
-            else binding.playVideoButton.visibility = View.GONE
-        }
-
-        private fun removeVideoPlayButton() {
-            binding.playVideoButton.visibility = View.GONE
+            if (!videoPlayer.isVideoPlaying()) R.drawable.play_icon
         }
 
         private fun setupPlayButton(post: Post) {
@@ -137,7 +138,7 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
                 binding.playButton.setImageResource(R.drawable.play_icon)
             } else {
                 val imageId =
-                    if (onInteractionListener.isAudioPlaying()) R.drawable.pause_icon else R.drawable.play_icon
+                    if (audioPlayer.isAudioPlaying()) R.drawable.pause_icon else R.drawable.play_icon
                 binding.playButton.setImageResource(imageId)
             }
         }
@@ -170,38 +171,38 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
             binding.mention.text = spannableStringBuilder
         }
 
-        private fun setupLikes(likedByMe: Boolean, post: Post) {
-            val likeRes = if (likedByMe) R.drawable.like_checked else R.drawable.like_unchecked
-            binding.like.setImageResource(likeRes)
-            binding.like.setOnClickListener {
-                onInteractionListener.onLike(getItem(adapterPosition))
+        private fun setupLikes(post: Post) {
+            val likeRes = if (post.likedByMe) R.drawable.like_checked else R.drawable.like_unchecked
+            with(binding) {
+                like.setImageResource(likeRes)
+                like.setOnClickListener {
+                    onInteractionListener.onLike(getItem(adapterPosition))
+                }
+                like.setOnLongClickListener {
+                    onInteractionListener.onLikeLongClick(getItem(adapterPosition).likeOwnerIds)
+                    true
+                }
+                likeCount.text = post.likeOwnerIds.size.toString()
+                likeCount.visibility =
+                    if (post.likedByMe || (binding.likeCount.text.toString().toIntOrNull()
+                            ?: 0) > 0
+                    ) View.VISIBLE else View.GONE
             }
-            binding.like.setOnLongClickListener {
-                onInteractionListener.onLikeLongClick(getItem(adapterPosition).likeOwnerIds)
-                true
-            }
-            binding.likeCount.text = post.likeOwnerIds.size.toString()
-            binding.likeCount.visibility =
-                if (likedByMe || (binding.likeCount.text.toString().toIntOrNull()
-                        ?: 0) > 0
-                ) View.VISIBLE else View.GONE
         }
 
         private fun setupAttachments(post: Post) {
             binding.apply {
-                imageAttachment.visibility = View.GONE
-                playerAttachment.visibility = View.GONE
                 val attachment = post.attachment
                 when (attachment?.type) {
                     Attachment.Type.IMAGE -> {
                         imageAttachment.visibility = View.VISIBLE
                         videoAttachment.visibility = View.GONE
-                        playerAttachment.visibility = View.GONE
+                        audioAttachment.visibility = View.GONE
                         imageAttachment.loadImageAttachment(attachment.url)
                     }
 
                     Attachment.Type.AUDIO -> {
-                        playerAttachment.visibility = View.VISIBLE
+                        audioAttachment.visibility = View.VISIBLE
                         imageAttachment.visibility = View.GONE
                         videoAttachment.visibility = View.GONE
                         playButton.setOnClickListener {
@@ -212,16 +213,36 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
                     }
 
                     Attachment.Type.VIDEO -> {
-                        playerAttachment.visibility = View.GONE
-                        imageAttachment.visibility = View.GONE
                         videoAttachment.visibility = View.VISIBLE
+                        imageAttachment.visibility = View.GONE
+                        audioAttachment.visibility = View.GONE
+
+                        if (videoPlayer.getSettledVideoId() != post.id) {
+                            thumbnail.visibility = View.VISIBLE
+                            videoPlayerView.visibility = View.GONE
+                        } else {
+                            thumbnail.visibility = View.GONE
+                            videoPlayerView.visibility = View.VISIBLE
+                            videoPlayer.attachView(videoPlayerView)
+                            if (videoPlayer.isVideoPlaying()) {
+                                videoPlayer.play()
+                            }
+                        }
+
+                        thumbnail.loadImageAttachment(post.attachment.url)
                         videoAttachment.setOnClickListener {
-                            onInteractionListener.onVideo(videoView, attachment)
-                            removeVideoPlayButton()
+                            thumbnail.visibility = View.GONE
+                            videoPlayerView.visibility = View.VISIBLE
+                            onInteractionListener.onVideo(
+                                binding.videoPlayerView,
+                                post.attachment,
+                                post.id
+                            )
                         }
                     }
+
                     null -> {
-                        playerAttachment.visibility = View.GONE
+                        audioAttachment.visibility = View.GONE
                         imageAttachment.visibility = View.GONE
                         videoAttachment.visibility = View.GONE
                     }
@@ -229,12 +250,10 @@ class PostAdapter(private val onInteractionListener: OnPostInteractionListener) 
             }
         }
 
-
         private fun updateAudioProgress(post: Post) {
             binding.progressBar.progress = if (currentMediaId == post.id) trackProgress else 0
         }
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = PostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)

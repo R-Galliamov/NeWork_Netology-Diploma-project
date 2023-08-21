@@ -16,7 +16,8 @@ import ru.netology.nework.R
 import ru.netology.nework.adapter.UserAdapter
 import ru.netology.nework.databinding.FragmentEventsBinding
 import ru.netology.nework.dto.User
-import ru.netology.nework.service.AudioLifecycleObserver
+import ru.netology.nework.error.ErrorHandler
+import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.viewModel.NavStateViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
@@ -67,20 +68,12 @@ class UsersFragment : Fragment() {
             binding.progressContainer.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
             if (state.errorState) {
-                if (state.errorObject.status == 401) {
-                    Toast.makeText(
-                        requireContext(),
-                        state.errorObject.status.toString(),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Snackbar.make(
-                        binding.root,
-                        getString(R.string.something_went_wrong),
-                        Snackbar.LENGTH_LONG
-                    ).setAction(getString(R.string.retry)) { usersViewModel.loadUsers() }
-                        .show()
-                }
+                val errorDescription = ErrorHandler.getApiErrorDescriptor(state.errorObject)
+                Toast.makeText(
+                    requireContext(),
+                    errorDescription,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

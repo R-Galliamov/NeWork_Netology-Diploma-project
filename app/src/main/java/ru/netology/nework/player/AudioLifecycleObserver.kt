@@ -1,9 +1,15 @@
-package ru.netology.nework.service
+package ru.netology.nework.player
 
+import android.app.Application
+import android.content.Context
 import android.media.MediaPlayer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -14,7 +20,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AudioLifecycleObserver @Inject constructor() : LifecycleEventObserver {
+class AudioLifecycleObserver @Inject constructor() : LifecycleEventObserver, AudioPlayer {
     private var player: MediaPlayer? = null
     var isPlaying = false
     var isSet = false
@@ -24,21 +30,22 @@ class AudioLifecycleObserver @Inject constructor() : LifecycleEventObserver {
     private var currentPosition: Int = 0
     private var progressJob: Job? = null
 
-    fun getCurrentPosition(): Int {
+    override fun getCurrentPosition(): Int {
         return currentPosition
     }
 
-    fun getTracDuration(): Int {
+    override fun getTracDuration(): Int {
         return trackDuration
     }
 
-    private fun initPlayer(){
-        if (player == null){
+    private fun initPlayer() {
+        if (player == null) {
             player = MediaPlayer()
         }
     }
 
-    private fun play() {
+    override fun isAudioPlaying(): Boolean = isPlaying
+    override fun play() {
         isPlaying = true
         player?.prepareAsync()
         player?.setOnPreparedListener {
@@ -55,19 +62,19 @@ class AudioLifecycleObserver @Inject constructor() : LifecycleEventObserver {
         }
     }
 
-    private fun pause() {
+    override fun pause() {
         isPlaying = false
         player?.pause()
         progressJob?.cancel()
     }
 
-    private fun resume() {
+    override fun resume() {
         isPlaying = true
         player?.start()
         startProgressJob()
     }
 
-    private fun stopAndReset() {
+    override fun stopAndReset() {
         isPlaying = false
         player?.stop()
         player?.reset()
@@ -85,7 +92,7 @@ class AudioLifecycleObserver @Inject constructor() : LifecycleEventObserver {
         }
     }
 
-    fun mediaPlayerDelegate(
+    override fun mediaPlayerDelegate(
         audio: Attachment,
         mediaId: Int,
         onComplete: () -> Unit

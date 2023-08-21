@@ -38,7 +38,7 @@ data class PostEntity(
         coords = coords?.toDto(),
         link = link,
         likeOwnerIds = likeOwnerIds,
-        mentionIds = mentionIds,
+        mentionIds = mentionIds ,
         mentionedMe = mentionedMe,
         likedByMe = likedByMe,
         attachment = attachment?.toDto(),

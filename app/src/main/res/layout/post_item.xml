@@ -83,28 +83,47 @@
         android:textColor="@color/black"
         tools:text="Some text for test" />
 
+
     <FrameLayout
         android:id="@+id/videoAttachment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="200dp"
         android:layout_marginTop="10dp">
 
-        <VideoView
-            android:layout_gravity="center"
-            android:id="@+id/videoView"
+        <FrameLayout
+            android:id="@+id/thumbnailContainer"
             android:layout_width="match_parent"
-            android:layout_height="200dp" />
+            android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/playVideoButton"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_gravity="center"
-            android:src="@drawable/play_icon" />
+            <ImageView
+                android:id="@+id/thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center" />
+
+            <ImageView
+                android:id="@+id/playVideoButton"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:src="@drawable/play_icon" />
+
+        </FrameLayout>
+
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:id="@+id/videoPlayerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:use_artwork="true" />
+
     </FrameLayout>
 
+
     <LinearLayout
-        android:id="@+id/playerAttachment"
+        android:id="@+id/audioAttachment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="10dp"
@@ -158,6 +177,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textColor="?colorSecondary"
             tools:text="Link" />
 
@@ -182,6 +203,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textColor="?colorSecondary"
             tools:text="Mentioned User, Mentioned User" />
     </LinearLayout>

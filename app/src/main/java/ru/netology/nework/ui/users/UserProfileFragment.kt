@@ -11,10 +11,12 @@ import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nework.R
 import ru.netology.nework.adapter.JobsAdapter
+import ru.netology.nework.adapter.JobsPreviewAdapter
 import ru.netology.nework.adapter.UserWallAdapter
 import ru.netology.nework.databinding.FragmentUserProfileBinding
 import ru.netology.nework.dto.Job
-import ru.netology.nework.service.AudioLifecycleObserver
+import ru.netology.nework.player.AudioLifecycleObserver
+import ru.netology.nework.player.VideoLifecycleObserver
 import ru.netology.nework.ui.events.UserEventsFragment
 import ru.netology.nework.ui.posts.UserPostsFragment
 import ru.netology.nework.view.loadCircleCropAvatar
@@ -32,7 +34,10 @@ class UserProfileFragment : Fragment() {
     private val authViewModel: AuthViewModel by activityViewModels()
 
     @Inject
-    lateinit var mediaObserver: AudioLifecycleObserver
+    lateinit var audioObserver: AudioLifecycleObserver
+
+    @Inject
+    lateinit var videoObserver: VideoLifecycleObserver
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,13 +60,20 @@ class UserProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        lifecycle.addObserver(mediaObserver)
-        val adapter = JobsAdapter(object : JobsAdapter.OnInteractionListener {
-            override fun onItem(job: Job) {
+        lifecycle.addObserver(audioObserver)
+        lifecycle.addObserver(videoObserver)
 
-            }
-        })
-        binding.recyclerViewJobs.adapter = adapter
+        val jobsPreviewAdapter =
+            JobsPreviewAdapter(object : JobsPreviewAdapter.OnInteractionListener {
+                override fun onClick() {
+                    binding.jobContainer.visibility = View.VISIBLE
+                }
+            })
+
+        val jobsAdapter = JobsAdapter()
+
+        binding.recyclerViewJobsPreview.adapter = jobsPreviewAdapter
+        binding.recyclerViewJobs.adapter = jobsAdapter
 
         usersViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
@@ -74,19 +86,34 @@ class UserProfileFragment : Fragment() {
                     userName.text = user.name
                     login.text = "@${user.login}"
 
-                    adapter.submitList(user.jobs)
-                    if (usersViewModel.currentUser.value == authViewModel.authenticatedUser.value) {
+                    jobContainer.visibility = View.GONE
+
+                    jobContainer.visibility = View.GONE
+
+                    jobsPreviewAdapter.submitList(user.jobs)
+                    jobsAdapter.submitList(user.jobs)
+
+                    if (usersViewModel.currentUser.value?.id == authViewModel.authenticatedUser.value?.id) {
+                        addJobButton.visibility = View.VISIBLE
+                        addJobButton.setOnClickListener {
+                            jobContainer.visibility = View.VISIBLE
+                        }
                         signOutButton.visibility = View.VISIBLE
                         signOutButton.setOnClickListener {
                             authViewModel.signOutUser()
                             findNavController().navigateUp()
                         }
                     } else {
+                        addJobButton.visibility = View.GONE
                         signOutButton.visibility = View.GONE
                     }
 
                     backButton.setOnClickListener {
                         findNavController().navigateUp()
+                    }
+
+                    overlay.setOnClickListener {
+                        binding.jobContainer.visibility = View.GONE
                     }
                 }
             }

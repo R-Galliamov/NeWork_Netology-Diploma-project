@@ -3,6 +3,8 @@
     <string name="add_post">Add post</string>
     <string name="add_event">Add event</string>
     <string name="job_preview">%s at %s</string>
+    <string name="from_date">from %s</string>
+    <string name="to_date">to %s.</string>
     <string name="login">login</string>
     <string name="password">password</string>
     <string name="sign_in">Sign in</string>
@@ -19,4 +21,11 @@
     <string name="invalid_link">Invalid link</string>
     <string name="something_went_wrong">Something went wrong</string>
     <string name="retry">Retry</string>
+    <string name="go_to">Go to</string>
+    <string name="company_name">Company name</string>
+    <string name="position">Position</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="link">Link</string>
+
 </resources>

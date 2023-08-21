@@ -1,7 +1,9 @@
 package ru.netology.nework.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import ru.netology.nework.dao.PostDao
@@ -10,6 +12,7 @@ import ru.netology.nework.entity.PostEntity
 import ru.netology.nework.entity.toDto
 import ru.netology.nework.entity.toEntity
 import ru.netology.nework.error.ApiError
+import ru.netology.nework.error.AppError
 import ru.netology.nework.error.NetworkError
 import ru.netology.nework.error.UnknownError
 import ru.netology.nework.service.api.ApiService
@@ -20,24 +23,35 @@ import javax.inject.Singleton
 @Singleton
 class PostRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
-    private val postDao: PostDao
+    private val postDao: PostDao,
 ) : PostRepository {
+
     override val data: Flow<List<Post>> =
         postDao.getAll().map(List<PostEntity>::toDto).flowOn(Dispatchers.Default)
 
     override suspend fun getAll() {
-        val response = apiService.getAllPosts()
-        if (!response.isSuccessful) {
-            throw ApiError(response.code(), response.message())
+        try {
+            val response = apiService.getAllPosts()
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            postDao.upsertPost(body.toEntity())
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: ApiError) {
+            throw e
+        } catch (e: Exception) {
+            throw UnknownError
         }
-        val body = response.body() ?: throw ApiError(response.code(), response.message())
-        postDao.upsertPost(body.toEntity())
     }
 
-    override suspend fun onLike(post: Post) : Post {
+    override suspend fun onLike(post: Post): Post {
         try {
             val response =
-                if (!post.likedByMe) apiService.likePostById(post.id) else apiService.dislikePostById(post.id)
+                if (!post.likedByMe) apiService.likePostById(post.id) else apiService.dislikePostById(
+                    post.id
+                )
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }

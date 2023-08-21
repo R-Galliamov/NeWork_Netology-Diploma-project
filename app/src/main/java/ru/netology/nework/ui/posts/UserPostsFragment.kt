@@ -8,11 +8,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.Toast
-import android.widget.VideoView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -23,9 +24,11 @@ import ru.netology.nework.databinding.FragmentUserPostsBinding
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
+import ru.netology.nework.error.ErrorHandler
 import ru.netology.nework.listeners.OnPostInteractionListener
-import ru.netology.nework.service.AudioLifecycleObserver
-import ru.netology.nework.service.VideoPlayer
+import ru.netology.nework.player.AudioLifecycleObserver
+import ru.netology.nework.player.VideoLifecycleObserver
+import ru.netology.nework.viewModel.AuthViewModel
 import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
@@ -38,13 +41,14 @@ class UserPostsFragment : Fragment() {
         get() = _binding!!
 
     private val feedViewModel: FeedViewModel by activityViewModels()
+    private val authViewModel: AuthViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
 
     @Inject
-    lateinit var mediaObserver: AudioLifecycleObserver
+    lateinit var audioObserver: AudioLifecycleObserver
 
     @Inject
-    lateinit var videoPlayer: VideoPlayer
+    lateinit var videoObserver: VideoLifecycleObserver
 
     private var adapter: PostAdapter? = null
 
@@ -60,7 +64,7 @@ class UserPostsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycle.addObserver(mediaObserver)
+        lifecycle.addObserver(audioObserver)
 
         binding.usersContainer.visibility = View.GONE
         val usersRecyclerView = binding.recyclerViewUsers
@@ -123,11 +127,9 @@ class UserPostsFragment : Fragment() {
 
             }
 
-            override fun onVideo(videoView: VideoView, video: Attachment) {
+            override fun onVideo(playerView: PlayerView, video: Attachment, postId: Int) {
                 if (URLUtil.isValidUrl(video.url)) {
-                    videoPlayer.videoPlayerDelegate(videoView, video) {
-                        adapter?.notifyDataSetChanged()
-                    }
+                    videoObserver.videoPlayerDelegate(playerView, video, postId)
                 } else {
                     Toast.makeText(
                         requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
@@ -135,11 +137,9 @@ class UserPostsFragment : Fragment() {
                 }
             }
 
-            override fun isVideoPlaying(): Boolean = videoPlayer.isPlaying.value!!
-
             override fun onAudio(audio: Attachment, postId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
-                    mediaObserver.mediaPlayerDelegate(audio, postId) {
+                    audioObserver.mediaPlayerDelegate(audio, postId) {
                         adapter?.notifyDataSetChanged()
                     }
                 } else {
@@ -150,11 +150,7 @@ class UserPostsFragment : Fragment() {
                     ).show()
                 }
             }
-
-            override fun isAudioPlaying(): Boolean {
-                return mediaObserver.isPlaying
-            }
-        })
+        }, audioObserver, videoObserver)
 
         val recyclerView = binding.recyclerView
         recyclerView.adapter = adapter
@@ -172,20 +168,12 @@ class UserPostsFragment : Fragment() {
 
         feedViewModel.dataState.observe(viewLifecycleOwner) { state ->
             if (state.errorState) {
-                if (state.errorObject.status == 401) {
-                    Toast.makeText(
-                        requireContext(),
-                        state.errorObject.status.toString(),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Snackbar.make(
-                        binding.root,
-                        getString(R.string.something_went_wrong),
-                        Snackbar.LENGTH_LONG
-                    ).setAction(getString(R.string.retry)) { feedViewModel.loadPosts() }
-                        .show()
-                }
+                val errorDescription = ErrorHandler.getApiErrorDescriptor(state.errorObject)
+                Toast.makeText(
+                    requireContext(),
+                    errorDescription,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

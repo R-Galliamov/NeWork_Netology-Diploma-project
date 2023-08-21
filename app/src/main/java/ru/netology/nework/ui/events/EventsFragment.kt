@@ -13,9 +13,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.netology.nework.R
 import ru.netology.nework.adapter.EventAdapter
 import ru.netology.nework.adapter.UserAdapter
@@ -23,8 +27,10 @@ import ru.netology.nework.databinding.FragmentEventsBinding
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.User
+import ru.netology.nework.error.ErrorHandler
 import ru.netology.nework.listeners.OnEventInteractionListener
-import ru.netology.nework.service.AudioLifecycleObserver
+import ru.netology.nework.player.AudioLifecycleObserver
+import ru.netology.nework.player.VideoLifecycleObserver
 import ru.netology.nework.viewModel.EventsViewModel
 import ru.netology.nework.viewModel.NavStateViewModel
 import ru.netology.nework.viewModel.UsersViewModel
@@ -42,9 +48,12 @@ class EventsFragment : Fragment() {
     private val navStateViewModel: NavStateViewModel by activityViewModels()
 
     @Inject
-    lateinit var mediaObserver: AudioLifecycleObserver
+    lateinit var audioObserver: AudioLifecycleObserver
 
-    private var adapter: EventAdapter? = null
+    @Inject
+    lateinit var videoObserver: VideoLifecycleObserver
+
+    private var eventAdapter: EventAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,7 +67,9 @@ class EventsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycle.addObserver(mediaObserver)
+        lifecycle.addObserver(audioObserver)
+        lifecycle.addObserver(videoObserver)
+        eventsViewModel.loadEvents()
 
         binding.usersContainer.visibility = View.GONE
         val usersRecyclerView = binding.recyclerViewUsers
@@ -74,7 +85,7 @@ class EventsFragment : Fragment() {
             binding.usersContainer.visibility = View.GONE
         }
 
-        adapter = EventAdapter(object : OnEventInteractionListener {
+        eventAdapter = EventAdapter(object : OnEventInteractionListener {
             override fun onLike(event: Event) {
                 eventsViewModel.onLike(event)
             }
@@ -116,17 +127,42 @@ class EventsFragment : Fragment() {
             }
 
             override fun onImage() {
-                TODO("Not yet implemented")
+
             }
 
-            override fun onVideo() {
-                TODO("Not yet implemented")
+            override fun onVideo(playerView: PlayerView, video: Attachment, eventId: Int) {
+                if (URLUtil.isValidUrl(video.url)) {
+                    videoObserver.videoPlayerDelegate(playerView, video, eventId)
+                    eventAdapter?.notifyDataSetChanged()
+                } else {
+                    Toast.makeText(
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
 
             override fun onAudio(audio: Attachment, eventId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
-                    mediaObserver.mediaPlayerDelegate(audio, eventId) {
-                        adapter?.notifyDataSetChanged()
+                    audioObserver.mediaPlayerDelegate(audio, eventId) {
+                        eventAdapter?.resetCurrentMediaId()
+                        eventAdapter?.notifyDataSetChanged()
+                    }
+
+                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+                        while (audioObserver.isPlaying) {
+                            val currentPosition = audioObserver.getCurrentPosition()
+                            delay(100)
+                            withContext(Dispatchers.Main) {
+                                val trackDuration = audioObserver.getTracDuration()
+                                if (trackDuration != 0) {
+                                    eventAdapter?.setProgress((currentPosition * 100) / trackDuration)
+                                }
+                                eventAdapter?.let {
+                                    val itemPosition = it.getPositionByEventId(eventId)
+                                    it.notifyItemChanged(itemPosition)
+                                }
+                            }
+                        }
                     }
                 } else {
                     Toast.makeText(
@@ -136,38 +172,29 @@ class EventsFragment : Fragment() {
                     ).show()
                 }
             }
+        }, audioObserver, videoObserver)
 
-            override fun isAudioPlaying(): Boolean {
-                return mediaObserver.isPlaying
-            }
-        })
+        val recyclerView = binding.recyclerView
+        recyclerView.adapter = eventAdapter
+
         binding.swiperefresh.setOnRefreshListener {
             eventsViewModel.loadEvents()
         }
-        val recyclerView = binding.recyclerView
-        recyclerView.adapter = adapter
+
         eventsViewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progressContainer.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
             if (state.errorState) {
-                if (state.errorObject.status == 401) {
-                    Toast.makeText(
-                        requireContext(),
-                        state.errorObject.status.toString(),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Snackbar.make(
-                        binding.root,
-                        getString(R.string.something_went_wrong),
-                        Snackbar.LENGTH_LONG
-                    ).setAction(getString(R.string.retry)) { eventsViewModel.loadEvents() }
-                        .show()
-                }
+                val errorDescription = ErrorHandler.getApiErrorDescriptor(state.errorObject)
+                Toast.makeText(
+                    requireContext(),
+                    errorDescription,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
         eventsViewModel.events.observe(viewLifecycleOwner) { events ->
-            adapter?.submitList(events)
+            eventAdapter?.submitList(events)
         }
     }
 

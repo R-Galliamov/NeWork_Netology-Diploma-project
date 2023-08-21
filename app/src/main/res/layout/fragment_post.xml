@@ -119,7 +119,7 @@
                     tools:text="Some text for test" />
 
                 <LinearLayout
-                    android:id="@+id/playerAttachment"
+                    android:id="@+id/audioAttachment"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="10dp"
@@ -149,22 +149,40 @@
                 <FrameLayout
                     android:id="@+id/videoAttachment"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="200dp"
                     android:layout_marginTop="10dp">
 
-                    <VideoView
-                        android:id="@+id/videoView"
-                        android:layout_gravity="center"
+                    <FrameLayout
+                        android:id="@+id/thumbnailContainer"
                         android:layout_width="match_parent"
-                        android:layout_height="200dp" />
+                        android:layout_height="match_parent">
 
-                    <ImageView
-                        android:id="@+id/playVideoButton"
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/play_icon" />
+                        <ImageView
+                            android:id="@+id/thumbnail"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center" />
+
+                        <ImageView
+                            android:id="@+id/playVideoButton"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/play_icon" />
+
+                    </FrameLayout>
+
+                    <com.google.android.exoplayer2.ui.PlayerView
+                        android:id="@+id/videoPlayerView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:use_artwork="true" />
+
                 </FrameLayout>
+
 
                 <ImageView
                     android:id="@+id/imageAttachment"
@@ -192,6 +210,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:textColor="?colorSecondary"
                         tools:text="Link" />
 
@@ -216,6 +236,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:textColor="?colorSecondary"
                         tools:text="Mentioned User, Mentioned User" />
                 </LinearLayout>
@@ -249,7 +271,7 @@
                     android:layout_height="200dp"
                     android:layout_marginTop="4dp"
                     android:background="@color/black"
-                    android:visibility="visible" />
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -274,7 +296,6 @@
                         android:layout_marginStart="4dp"
                         android:textColor="@color/black"
                         tools:text="3" />
-
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
