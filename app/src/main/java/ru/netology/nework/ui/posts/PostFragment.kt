@@ -34,7 +34,6 @@ import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.player.VideoLifecycleObserver
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
-import ru.netology.nework.viewModel.AuthViewModel
 import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
@@ -335,7 +334,7 @@ class PostFragment : Fragment() {
 
     private fun setupDatetime(post: Post) {
         with(binding) {
-            date.text = DateTimeConverter.publishedToUIDate(post.published)
+            date.text = DateTimeConverter.publishedToUiDate(post.published)
             time.text = DateTimeConverter.publishedToUiTime(post.published)
         }
     }

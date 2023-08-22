@@ -4,7 +4,7 @@
     <string name="add_event">Add event</string>
     <string name="job_preview">%s at %s</string>
     <string name="from_date">from %s</string>
-    <string name="to_date">to %s.</string>
+    <string name="to_date">to %s</string>
     <string name="login">login</string>
     <string name="password">password</string>
     <string name="sign_in">Sign in</string>
@@ -27,5 +27,7 @@
     <string name="from">From</string>
     <string name="to">To</string>
     <string name="link">Link</string>
+    <string name="job_request_error">Company name, position and from shouldn\'t be empty</string>
+    <string name="invalid_date">Date should be in 01/01/1990 format</string>
 
 </resources>

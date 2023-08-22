@@ -1,52 +1,90 @@
 package ru.netology.nework.adapter
 
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import ru.netology.nework.R
+import ru.netology.nework.converters.DateTimeConverter
 import ru.netology.nework.databinding.JobItemBinding
 import ru.netology.nework.dto.Job
 
-class JobsAdapter :
-    ListAdapter<Job, JobsAdapter.JobsViewHolder>(JobsDiffCallback()) {
+class JobsAdapter(
+    private val onInteractionListener: OnInteractionListener,
+    private val isProfileOwner: Boolean
+) : ListAdapter<Job, JobsAdapter.JobsViewHolder>(JobsDiffCallback()) {
 
     interface OnInteractionListener {
-        fun onItem(job: Job)
+        fun onLink(job: Job)
+        fun onDelete(job: Job)
     }
 
-    inner class JobsViewHolder(private val binding: JobItemBinding) :
-        ViewHolder(binding.root) {
+    inner class JobsViewHolder(private val binding: JobItemBinding) : ViewHolder(binding.root) {
         fun bind(job: Job) {
             binding.apply {
+                Log.d("Jobs Adapter", job.toString())
                 val textBuilder = StringBuilder()
                 textBuilder.append(
                     itemView.context.getString(
-                        R.string.job_preview,
-                        job.position,
-                        job.name
+                        R.string.job_preview, job.position, job.name
                     )
                 )
                 textBuilder.append(" ")
-                textBuilder.append(itemView.context.getString(R.string.from_date, job.start))
-                if (!job.link.isNullOrBlank()) {
-                    textBuilder.append(itemView.context.getString(R.string.to_date, job.finish))
+                val startDate = DateTimeConverter.datetimeToUiDate(job.start)
+                textBuilder.append(itemView.context.getString(R.string.from_date, startDate))
+                if (!job.finish.isNullOrBlank()) {
+                    textBuilder.append(" ")
+                    val finishDate = DateTimeConverter.datetimeToUiDate(job.finish)
+                    textBuilder.append(itemView.context.getString(R.string.to_date, finishDate))
                 }
-                textBuilder.append(".")
-
+                textBuilder.append(". ")
                 text.text = textBuilder
-                if (!job.link.isNullOrBlank()) {
-                    link.text = job.link
-                }
+                var spannableString = SpannableString(textBuilder)
 
+                if (job.link != null) {
+                    val linkText = itemView.context.getString(R.string.go_to)
+                    textBuilder.append(linkText)
+                    spannableString = SpannableString(textBuilder)
+                    val clickableSpan = object : ClickableSpan() {
+                        override fun onClick(p0: View) {
+                            onInteractionListener.onLink(job)
+                        }
+                    }
+
+                    val startIndex = textBuilder.indexOf(linkText)
+                    if (startIndex != -1) {
+                        spannableString.setSpan(
+                            clickableSpan,
+                            startIndex,
+                            startIndex + linkText.length,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                    text.movementMethod = LinkMovementMethod.getInstance()
+                }
+                text.text = spannableString
+
+                if (isProfileOwner) {
+                    deleteButton.visibility = View.VISIBLE
+                    deleteButton.setOnClickListener {
+                        onInteractionListener.onDelete(job)
+                    }
+                } else {
+                    deleteButton.visibility = View.GONE
+                }
             }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JobsViewHolder {
-        val binding =
-            JobItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = JobItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return JobsViewHolder(binding)
     }
 

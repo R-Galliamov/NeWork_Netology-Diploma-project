@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.netology.nework.auth.AppAuth
+import ru.netology.nework.dto.Job
 import ru.netology.nework.dto.User
 import ru.netology.nework.model.LoadingStateModel
 import ru.netology.nework.repository.JobRepository
@@ -41,6 +42,7 @@ class UsersViewModel @Inject constructor(
             usersNavList.add(user)
         }
         _currentUser.value = user
+
         viewModelScope.launch(Dispatchers.IO) {
             val userJobs = jobRepository.getJobs(user.id)
             withContext(Dispatchers.Main) {
@@ -81,6 +83,31 @@ class UsersViewModel @Inject constructor(
             }
             withContext(Dispatchers.Main) {
                 _dataState.value = newState
+            }
+        }
+    }
+
+    fun saveJob(job: Job) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val job = jobRepository.saveJob(job)
+            val user = currentUser.value
+            val jobsList = user?.jobs as MutableList
+            jobsList.add(job)
+            withContext(Dispatchers.Main) {
+                setCurrentUser(user.copy(jobs = jobsList))
+            }
+        }
+    }
+
+    fun deleteJob(job: Job) {
+        viewModelScope.launch(Dispatchers.IO) {
+            jobRepository.deleteJob(job.id)
+
+            val user = currentUser.value
+            val jobsList = user?.jobs as MutableList
+            jobsList.remove(job)
+            withContext(Dispatchers.Main) {
+                setCurrentUser(user.copy(jobs = jobsList))
             }
         }
     }

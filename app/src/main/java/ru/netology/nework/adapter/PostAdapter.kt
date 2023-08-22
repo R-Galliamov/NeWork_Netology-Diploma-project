@@ -117,7 +117,7 @@ class PostAdapter(
         }
 
         private fun setupDateTime(post: Post) {
-            binding.date.text = DateTimeConverter.publishedToUIDate(post.published)
+            binding.date.text = DateTimeConverter.publishedToUiDate(post.published)
             binding.time.text = DateTimeConverter.publishedToUiTime(post.published)
         }
 

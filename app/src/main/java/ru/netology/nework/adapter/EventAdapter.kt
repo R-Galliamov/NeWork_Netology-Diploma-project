@@ -16,7 +16,6 @@ import ru.netology.nework.converters.DateTimeConverter
 import ru.netology.nework.databinding.EventItemBinding
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Event
-import ru.netology.nework.dto.Post
 import ru.netology.nework.listeners.OnEventInteractionListener
 import ru.netology.nework.player.AudioPlayer
 import ru.netology.nework.player.VideoPlayer
@@ -246,9 +245,9 @@ class EventAdapter(
 
         private fun setupDatetime(event: Event) {
             with(binding) {
-                date.text = DateTimeConverter.publishedToUIDate(event.published)
+                date.text = DateTimeConverter.publishedToUiDate(event.published)
                 time.text = DateTimeConverter.publishedToUiTime(event.published)
-                datetime.text = DateTimeConverter.datetimeToUiDatetime(event.datetime)
+                datetime.text = DateTimeConverter.datetimeToUiDateTime(event.datetime)
             }
         }
 

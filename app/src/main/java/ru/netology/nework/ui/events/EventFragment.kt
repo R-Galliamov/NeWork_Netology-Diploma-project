@@ -320,9 +320,9 @@ class EventFragment : Fragment() {
 
     private fun setupDatetime(event: Event) {
         with(binding) {
-            date.text = DateTimeConverter.publishedToUIDate(event.published)
+            date.text = DateTimeConverter.publishedToUiDate(event.published)
             time.text = DateTimeConverter.publishedToUiTime(event.published)
-            datetime.text = DateTimeConverter.datetimeToUiDatetime(event.datetime)
+            datetime.text = DateTimeConverter.datetimeToUiDateTime(event.datetime)
         }
     }
 

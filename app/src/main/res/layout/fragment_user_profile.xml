@@ -164,7 +164,6 @@
                         android:layout_height="match_parent"
                         android:layout_margin="12dp"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                        app:spanCount="3"
                         tools:itemCount="3"
                         tools:listitem="@layout/job_item" />
 
@@ -178,7 +177,7 @@
 
 
                         <EditText
-                            android:id="@+id/name"
+                            android:id="@+id/companyName"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="@string/company_name"
@@ -194,6 +193,7 @@
                             android:textSize="14dp" />
 
                         <EditText
+                            android:maxLength="10"
                             android:id="@+id/from"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -216,6 +216,16 @@
                             android:hint="@string/link"
                             android:inputType="text"
                             android:textSize="14dp" />
+
+                        <TextView
+                            android:id="@+id/error"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:textColor="#FF0000"
+                            android:visibility="gone"
+                            android:gravity="center"
+                            tools:text="Error" />
 
                         <TextView
                             android:id="@+id/sendData"
