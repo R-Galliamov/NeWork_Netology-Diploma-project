@@ -4,9 +4,9 @@
         android:id="@+id/add_image"
         android:title="@string/image" />
     <item
-        android:id="@+id/add_audio"
-        android:title="@string/audio" />
-    <item
         android:id="@+id/add_video"
         android:title="@string/video" />
+    <item
+        android:id="@+id/add_audio"
+        android:title="@string/audio" />
 </menu>

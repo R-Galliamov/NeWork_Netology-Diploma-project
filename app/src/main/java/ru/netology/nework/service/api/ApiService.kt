@@ -21,6 +21,7 @@ import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
 import ru.netology.nework.dto.AuthState
 import ru.netology.nework.dto.Job
+import ru.netology.nework.dto.Media
 import ru.netology.nework.model.requestModel.PostRequest
 
 private const val BASE_URL = "https://netomedia.ru/"
@@ -80,7 +81,7 @@ interface ApiService {
     @GET("api/{user_id}/jobs/")
     suspend fun getJobsByUserId(@Path("user_id") userId: Int): Response<List<Job>>
 
-    @POST("/api/my/jobs")
+    @POST("/api/my/jobs/")
     suspend fun saveJob(@Body job: Job): Response<Job>
 
     @DELETE("/api/my/jobs/{job_id}/")
@@ -103,7 +104,7 @@ interface ApiService {
     ): Response<AuthState>
 
     @Multipart
-    @POST("api/users/registration")
+    @POST("api/users/registration/")
     suspend fun registerUser(
         @Part("login") login: RequestBody,
         @Part("password") password: RequestBody,
@@ -112,7 +113,7 @@ interface ApiService {
     ): Response<AuthState>
 
     @Multipart
-    @POST("media")
-    suspend fun upload(@Part media: MultipartBody.Part): Response<AuthState>
+    @POST("api/media/")
+    suspend fun upload(@Part media: MultipartBody.Part): Response<Media>
 }
 

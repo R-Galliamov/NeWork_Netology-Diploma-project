@@ -47,6 +47,11 @@ class NewPostViewModel @Inject constructor(private val postRepository: PostRepos
         _postRequest.value = _postRequest.value?.copy(attachment = attachment)
     }
 
+    fun setAudio(uri: String) {
+        val attachment = Attachment(uri, Attachment.Type.AUDIO)
+        _postRequest.value = _postRequest.value?.copy(attachment = attachment)
+    }
+
     fun removeAttachment() {
         _postRequest.value = _postRequest.value?.copy(attachment = null)
     }
@@ -81,13 +86,12 @@ class NewPostViewModel @Inject constructor(private val postRepository: PostRepos
     fun savePost() {
         _postRequest.value?.let {
             viewModelScope.launch {
-                try {
+               // try {
                     postRepository.savePost(_postRequest.value!!)
                     _postCreated.value = Unit
-                } catch (e: Exception) {
-                    Log.d("Error", e.message.toString())
-                    e.printStackTrace()
-                }
+               // } catch (e: Exception) {
+               //     e.printStackTrace()
+               // }
             }
         }
         _postRequest.value = emptyPost

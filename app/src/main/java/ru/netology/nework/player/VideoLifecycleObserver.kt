@@ -32,6 +32,8 @@ class VideoLifecycleObserver @Inject constructor(private val context: Context) :
     private var mediaId = -1
     private var view: PlayerView? = null
 
+    private val DEFAULT_POST_ID = -2
+
     init {
         initPlayer()
     }
@@ -73,7 +75,7 @@ class VideoLifecycleObserver @Inject constructor(private val context: Context) :
         } ?: throw NullPointerException("Player must be initialized")
     }
 
-    fun videoPlayerDelegate(view: PlayerView, media: Attachment, mediaId: Int = -2) {
+    fun videoPlayerDelegate(view: PlayerView, media: Attachment, mediaId: Int = DEFAULT_POST_ID) {
         if (this.mediaId != mediaId) {
             this.mediaId = mediaId
             this.view?.let { detachView(it) }

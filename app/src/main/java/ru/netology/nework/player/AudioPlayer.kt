@@ -10,9 +10,4 @@ interface AudioPlayer {
     fun pause()
     fun resume()
     fun stopAndReset()
-    fun mediaPlayerDelegate(
-        audio: Attachment,
-        mediaId: Int,
-        onComplete: () -> Unit
-    )
 }

@@ -26,6 +26,8 @@ class AudioLifecycleObserver @Inject constructor() : LifecycleEventObserver, Aud
     var isSet = false
     var mediaId = -1
 
+    private val DEFAULT_POST_ID = -2
+
     private var trackDuration: Int = 0
     private var currentPosition: Int = 0
     private var progressJob: Job? = null
@@ -92,10 +94,10 @@ class AudioLifecycleObserver @Inject constructor() : LifecycleEventObserver, Aud
         }
     }
 
-    override fun mediaPlayerDelegate(
+    fun mediaPlayerDelegate(
         audio: Attachment,
-        mediaId: Int,
-        onComplete: () -> Unit
+        mediaId: Int = DEFAULT_POST_ID,
+        onComplete: () -> Unit,
     ) {
         if (this.mediaId != mediaId) {
             this.mediaId = mediaId

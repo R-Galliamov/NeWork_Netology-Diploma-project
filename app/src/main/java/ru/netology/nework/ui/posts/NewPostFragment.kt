@@ -2,7 +2,9 @@ package ru.netology.nework.ui.posts
 
 import android.app.Activity
 import android.content.Intent
+import android.database.Cursor
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.Spannable
@@ -29,7 +31,10 @@ import com.github.dhaval2404.imagepicker.ImagePicker
 import com.github.dhaval2404.imagepicker.constant.ImageProvider
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.netology.nework.R
 import ru.netology.nework.adapter.UserAdapter
 import ru.netology.nework.databinding.FragmentNewPostBinding
@@ -43,6 +48,7 @@ import ru.netology.nework.view.loadImageAttachment
 import ru.netology.nework.viewModel.AuthViewModel
 import ru.netology.nework.viewModel.NewPostViewModel
 import ru.netology.nework.viewModel.UsersViewModel
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -67,25 +73,44 @@ class NewPostFragment : Fragment() {
                     ).show()
                 }
 
-                Activity.RESULT_OK -> newPostViewModel.setPhoto(it.data?.data.toString())
+                Activity.RESULT_OK -> {
+                    Log.d("App log", it.data?.data.toString())
+                    newPostViewModel.setPhoto(it.data?.data.toString())
+                }
             }
         }
 
-    private val PICK_VIDEO_REQUEST = 100
+    private val pickVideoLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val videoUri = result.data?.data.toString()
+                Log.d("App log", videoUri)
+                newPostViewModel.setVideo(videoUri)
+            }
+        }
+
+    private val getVideo =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { videoUri ->
+                Log.d("App log", videoUri.toString())
+                newPostViewModel.setVideo(videoUri.toString())
+            }
+        }
+
+    private val getAudio =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { selectedUri ->
+                // If you want to convert the content Uri to a file path
+
+                //newPostViewModel.setAudio(localFile.absolutePath)
+            }
+        }
 
     @Inject
     lateinit var audioObserver: AudioLifecycleObserver
 
     @Inject
     lateinit var videoObserver: VideoLifecycleObserver
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_VIDEO_REQUEST && resultCode == Activity.RESULT_OK) {
-            val videoUri = data?.data
-            newPostViewModel.setVideo(videoUri.toString())
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -124,7 +149,7 @@ class NewPostFragment : Fragment() {
             sendData.setOnClickListener {
                 if (checkContent()) {
                     sendData()
-                    findNavController().navigateUp()
+                    //findNavController().navigateUp()
                 }
             }
             overlay.setOnClickListener {
@@ -137,7 +162,7 @@ class NewPostFragment : Fragment() {
         when (attachment?.type) {
             Attachment.Type.IMAGE -> setupImageAttachment(attachment)
             Attachment.Type.VIDEO -> setupVideoAttachment(attachment)
-            Attachment.Type.AUDIO -> TODO()
+            Attachment.Type.AUDIO -> setupAudioAttachment(attachment)
             null -> hideAttachment()
         }
         setupAddAttachmentButton(attachment)
@@ -157,7 +182,6 @@ class NewPostFragment : Fragment() {
             videoAttachment.setOnClickListener {
                 thumbnail.visibility = View.GONE
                 videoPlayerView.visibility = View.VISIBLE
-
                 if (URLUtil.isValidUrl(video.url)) {
                     videoObserver.videoPlayerDelegate(videoPlayerView, video)
                 } else {
@@ -170,11 +194,53 @@ class NewPostFragment : Fragment() {
         }
     }
 
-    private fun openVideoPicker() {
-        val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
-        if (intent.resolveActivity(requireActivity().packageManager) != null) {
-            startActivityForResult(intent, PICK_VIDEO_REQUEST)
+    private fun setupAudioAttachment(audio: Attachment) {
+        binding.audioAttachment.visibility = View.VISIBLE
+        binding.playButton.setOnClickListener {
+            audioObserver.mediaPlayerDelegate(audio) {
+                updateAudioPlayerUI()
+                binding.progressBar.progress = 0
+            }
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+                while (audioObserver.isPlaying) {
+                    val currentPosition = audioObserver.getCurrentPosition()
+                    delay(100)
+                    withContext(Dispatchers.Main) {
+                        val trackDuration = audioObserver.getTracDuration()
+                        if (trackDuration != 0) {
+                            binding.progressBar.progress = (currentPosition * 100) / trackDuration
+                        }
+                    }
+                }
+            }
+            updateAudioPlayerUI()
         }
+    }
+
+    private fun updateAudioPlayerUI() {
+        val imageId = if (audioObserver.isPlaying) R.drawable.pause_icon else R.drawable.play_icon
+        binding.playButton.setImageResource(imageId)
+    }
+
+    private fun openImagePicker() {
+        ImagePicker.with(this).crop().compress(2048).provider(ImageProvider.GALLERY)
+            .galleryMimeTypes(
+                arrayOf(
+                    "image/png",
+                    "image/jpeg",
+                )
+            ).createIntent(pickPhotoLauncher::launch)
+    }
+
+    private fun openVideoPicker() {
+       // val intent = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+       // pickVideoLauncher.launch(intent)
+
+        getVideo.launch("video/*")
+    }
+
+    private fun openAudioPicker() {
+        getAudio.launch("audio/*")
     }
 
     private fun setupAddAttachmentButton(attachment: Attachment?) {
@@ -201,13 +267,7 @@ class NewPostFragment : Fragment() {
         popUpMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
             when (menuItem.itemId) {
                 R.id.add_image -> {
-                    ImagePicker.with(this).crop().compress(2048).provider(ImageProvider.GALLERY)
-                        .galleryMimeTypes(
-                            arrayOf(
-                                "image/png",
-                                "image/jpeg",
-                            )
-                        ).createIntent(pickPhotoLauncher::launch)
+                    openImagePicker()
                     true
                 }
 
@@ -217,7 +277,7 @@ class NewPostFragment : Fragment() {
                 }
 
                 R.id.add_audio -> {
-
+                    openAudioPicker()
                     true
                 }
 
