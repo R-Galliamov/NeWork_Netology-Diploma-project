@@ -86,12 +86,12 @@ class NewPostViewModel @Inject constructor(private val postRepository: PostRepos
     fun savePost() {
         _postRequest.value?.let {
             viewModelScope.launch {
-               // try {
+                try {
                     postRepository.savePost(_postRequest.value!!)
                     _postCreated.value = Unit
-               // } catch (e: Exception) {
-               //     e.printStackTrace()
-               // }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
         _postRequest.value = emptyPost

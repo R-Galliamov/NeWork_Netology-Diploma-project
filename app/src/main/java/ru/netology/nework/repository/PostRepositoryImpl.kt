@@ -1,5 +1,6 @@
 package ru.netology.nework.repository
 
+import android.content.ContentResolver
 import android.util.Log
 import androidx.core.net.toFile
 import androidx.core.net.toUri
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.nework.dao.PostDao
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Media
@@ -29,6 +31,7 @@ import javax.inject.Singleton
 class PostRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
     private val postDao: PostDao,
+    private val contentResolver: ContentResolver,
 ) : PostRepository {
 
     override val data: Flow<List<Post>> =
@@ -52,21 +55,19 @@ class PostRepositoryImpl @Inject constructor(
     }
 
     override suspend fun savePost(postRequest: PostRequest): Post {
-        var data = postRequest
-        if (postRequest.attachment != null) {
-            val media = upload(postRequest.attachment)
-            data = data.copy(attachment = data.attachment?.copy(url = media.url))
-        }
-        val response = apiService.savePost(data)
-        if (!response.isSuccessful) {
-            throw ApiError(response.code(), response.message())
-        }
-        val post = response.body() ?: throw ApiError(response.code(), response.message())
-        postDao.upsertPost(PostEntity.fromDto(post))
-        return post
-
         try {
-
+            var data = postRequest
+            if (postRequest.attachment != null) {
+                val media = upload(postRequest.attachment)
+                data = data.copy(attachment = data.attachment?.copy(url = media.url))
+            }
+            val response = apiService.savePost(data)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            val post = response.body() ?: throw ApiError(response.code(), response.message())
+            postDao.upsertPost(PostEntity.fromDto(post))
+            return post
         } catch (e: IOException) {
             Log.d("Error", e.message.toString())
             throw NetworkError
@@ -103,19 +104,20 @@ class PostRepositoryImpl @Inject constructor(
     override suspend fun isDbEmpty() = postDao.getRowCount() == 0
 
     override suspend fun upload(attachment: Attachment): Media {
-        val file = attachment.url.toUri().toFile()
-        val media = MultipartBody.Part.createFormData(
-            "file", file.name, file.asRequestBody()
-        )
-
-        val response = apiService.upload(media)
-        if (!response.isSuccessful) {
-            throw ApiError(response.code(), response.message())
-        }
-
-        return response.body() ?: throw ApiError(response.code(), response.message())
         try {
-
+            val media = contentResolver.openInputStream(attachment.url.toUri())?.use {
+                MultipartBody.Part.createFormData(
+                    "file", "file", it.readBytes().toRequestBody()
+                )
+            }
+            requireNotNull(media) {
+                "Resource ${attachment.url} not found"
+            }
+            val response = apiService.upload(media)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            return response.body() ?: throw ApiError(response.code(), response.message())
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {

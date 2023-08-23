@@ -1,12 +1,9 @@
 package ru.netology.nework.ui.posts
 
 import android.app.Activity
-import android.content.Intent
-import android.database.Cursor
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -14,7 +11,6 @@ import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -74,35 +70,22 @@ class NewPostFragment : Fragment() {
                 }
 
                 Activity.RESULT_OK -> {
-                    Log.d("App log", it.data?.data.toString())
                     newPostViewModel.setPhoto(it.data?.data.toString())
                 }
-            }
-        }
-
-    private val pickVideoLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val videoUri = result.data?.data.toString()
-                Log.d("App log", videoUri)
-                newPostViewModel.setVideo(videoUri)
             }
         }
 
     private val getVideo =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { videoUri ->
-                Log.d("App log", videoUri.toString())
                 newPostViewModel.setVideo(videoUri.toString())
             }
         }
 
     private val getAudio =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.let { selectedUri ->
-                // If you want to convert the content Uri to a file path
-
-                //newPostViewModel.setAudio(localFile.absolutePath)
+            uri?.let { audioUri ->
+                newPostViewModel.setAudio(audioUri.toString())
             }
         }
 
@@ -138,7 +121,6 @@ class NewPostFragment : Fragment() {
             setupAttachment(post.attachment)
             setupMentions(post)
 
-
         }
 
         binding.apply {
@@ -149,7 +131,7 @@ class NewPostFragment : Fragment() {
             sendData.setOnClickListener {
                 if (checkContent()) {
                     sendData()
-                    //findNavController().navigateUp()
+                    findNavController().navigateUp()
                 }
             }
             overlay.setOnClickListener {
@@ -197,7 +179,14 @@ class NewPostFragment : Fragment() {
     private fun setupAudioAttachment(audio: Attachment) {
         binding.audioAttachment.visibility = View.VISIBLE
         binding.playButton.setOnClickListener {
-            audioObserver.mediaPlayerDelegate(audio) {
+            val audioUri = Uri.parse(audio.url)
+            val inputStream = requireActivity().contentResolver.openInputStream(audioUri)
+            val localFile = File(context?.cacheDir, "temp_audio.mp3")
+            localFile.outputStream().use { outputStream ->
+                inputStream?.copyTo(outputStream)
+            }
+            val preparedAudio = Attachment(localFile.absolutePath, Attachment.Type.AUDIO)
+            audioObserver.mediaPlayerDelegate(preparedAudio) {
                 updateAudioPlayerUI()
                 binding.progressBar.progress = 0
             }
@@ -233,9 +222,6 @@ class NewPostFragment : Fragment() {
     }
 
     private fun openVideoPicker() {
-       // val intent = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-       // pickVideoLauncher.launch(intent)
-
         getVideo.launch("video/*")
     }
 
