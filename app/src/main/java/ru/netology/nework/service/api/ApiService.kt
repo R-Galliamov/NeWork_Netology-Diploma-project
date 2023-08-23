@@ -21,6 +21,7 @@ import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
 import ru.netology.nework.dto.AuthState
 import ru.netology.nework.dto.Job
+import ru.netology.nework.model.requestModel.PostRequest
 
 private const val BASE_URL = "https://netomedia.ru/"
 
@@ -51,6 +52,9 @@ interface ApiService {
 
     @DELETE("api/posts/{id}/likes")
     suspend fun dislikePostById(@Path("id") id: Int): Response<Post>
+
+    @POST("api/posts/")
+    suspend fun savePost(@Body postRequest: PostRequest): Response<Post>
 
     //Events
     @GET("api/events/")

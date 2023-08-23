@@ -201,6 +201,7 @@ class PostFragment : Fragment() {
                     spannableStringBuilder.append(", ")
                 }
             }
+
             mention.movementMethod = LinkMovementMethod.getInstance()
             mention.text = spannableStringBuilder
             mentionedContainer.visibility =

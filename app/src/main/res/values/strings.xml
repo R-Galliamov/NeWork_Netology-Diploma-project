@@ -29,5 +29,19 @@
     <string name="link">Link</string>
     <string name="job_request_error">Company name, position and from shouldn\'t be empty</string>
     <string name="invalid_date">Date should be in 01/01/1990 format</string>
+    <string name="add_link">Add link</string>
+    <string name="add_image">Add image</string>
+    <string name="add_video">Add video</string>
+    <string name="add_audio">Add audio</string>
+    <string name="what_s_new">What\'s new?</string>
+    <string name="mention_someone">Mention someone</string>
+    <string name="send_post">Send post</string>
+    <string name="remove_attachment">Remove attachment</string>
+    <string name="add_attachment">Add attachment</string>
+    <string name="content_couldn_t_be_empty">Content couldn\'t be empty</string>
+    <string name="image">Image</string>
+    <string name="audio">Audio</string>
+    <string name="video">Video</string>
+    <string name="mention_user">Mention\u00A0user</string>
 
 </resources>

@@ -26,9 +26,9 @@ class JobRepositoryImpl @Inject constructor(
         } catch (e: ApiError) {
             throw e
         } catch (e: Exception) {
+            Log.d("Error", e.message.toString())
             throw UnknownError
         }
-
     }
 
     override suspend fun saveJob(job: Job): Job {
@@ -36,7 +36,6 @@ class JobRepositoryImpl @Inject constructor(
         if (!response.isSuccessful) {
             throw ApiError(response.code(), response.message())
         }
-        Log.d("App log", response.body().toString())
         return response.body() ?: throw ApiError(response.code(), response.message())
 
     }

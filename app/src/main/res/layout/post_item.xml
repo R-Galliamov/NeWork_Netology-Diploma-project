@@ -178,10 +178,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:ellipsize="end"
+            android:lines="1"
             android:maxLines="1"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
             android:textColor="?colorSecondary"
             tools:text="Link" />
-
     </LinearLayout>
 
     <LinearLayout

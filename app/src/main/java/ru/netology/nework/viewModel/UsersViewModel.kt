@@ -65,7 +65,7 @@ class UsersViewModel @Inject constructor(
     }
 
     fun loadUsers() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO)  {
             var newState = if (usersRepository.isDbEmpty()) {
                 LoadingStateModel(loading = true)
             } else {
