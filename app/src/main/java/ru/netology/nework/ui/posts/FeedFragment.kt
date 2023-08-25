@@ -4,9 +4,11 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -14,7 +16,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -31,6 +32,7 @@ import ru.netology.nework.error.ErrorHandler
 import ru.netology.nework.listeners.OnPostInteractionListener
 import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.player.VideoLifecycleObserver
+import ru.netology.nework.viewModel.EditPostViewModel
 import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.NavStateViewModel
 import ru.netology.nework.viewModel.UsersViewModel
@@ -45,6 +47,7 @@ class FeedFragment : Fragment() {
 
     private val feedViewModel: FeedViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
+    private val editPostViewModel: EditPostViewModel by activityViewModels()
     private val navStateViewModel: NavStateViewModel by activityViewModels()
 
     @Inject
@@ -56,9 +59,7 @@ class FeedFragment : Fragment() {
     private var postAdapter: PostAdapter? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentFeedBinding.inflate(inflater, container, false)
         return binding.root
@@ -69,7 +70,6 @@ class FeedFragment : Fragment() {
 
         lifecycle.addObserver(audioObserver)
         lifecycle.addObserver(videoObserver)
-        feedViewModel.loadPosts()
 
         binding.usersContainer.visibility = View.GONE
         val usersRecyclerView = binding.recyclerViewUsers
@@ -88,7 +88,6 @@ class FeedFragment : Fragment() {
         postAdapter = PostAdapter(object : OnPostInteractionListener {
             override fun onLike(post: Post) {
                 feedViewModel.onLike(post)
-                postAdapter?.notifyDataSetChanged()
             }
 
             override fun onLikeLongClick(usersIdsList: List<Int>) {
@@ -115,9 +114,7 @@ class FeedFragment : Fragment() {
                     startActivity(intent)
                 } else {
                     Toast.makeText(
-                        requireContext(),
-                        getString(R.string.invalid_link),
-                        Toast.LENGTH_SHORT
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
                     ).show()
                 }
             }
@@ -169,11 +166,13 @@ class FeedFragment : Fragment() {
 
                 } else {
                     Toast.makeText(
-                        requireContext(),
-                        getString(R.string.invalid_link),
-                        Toast.LENGTH_SHORT
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
                     ).show()
                 }
+            }
+
+            override fun onMenu(view: View, post: Post) {
+                showMenu(view, post)
             }
 
         }, audioObserver, videoObserver)
@@ -191,15 +190,35 @@ class FeedFragment : Fragment() {
             if (state.errorState) {
                 val errorDescription = ErrorHandler.getApiErrorDescriptor(state.errorObject)
                 Toast.makeText(
-                    requireContext(),
-                    errorDescription,
-                    Toast.LENGTH_SHORT
+                    requireContext(), errorDescription, Toast.LENGTH_SHORT
                 ).show()
             }
         }
         feedViewModel.posts.observe(viewLifecycleOwner) { posts ->
             postAdapter?.submitList(posts)
         }
+    }
+
+    private fun showMenu(view: View, post: Post) {
+        val popUpMenu = PopupMenu(requireContext(), view)
+        popUpMenu.inflate(R.menu.post_event_menu)
+        popUpMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
+            when (menuItem.itemId) {
+                R.id.edit -> {
+                    editPostViewModel.setPostData(post)
+                    findNavController().navigate(R.id.action_holderFragment_to_editPostFragment)
+                    true
+                }
+
+                R.id.delete -> {
+                    feedViewModel.deletePost(post)
+                    true
+                }
+
+                else -> false
+            }
+        }
+        popUpMenu.show()
     }
 
     override fun onDestroyView() {

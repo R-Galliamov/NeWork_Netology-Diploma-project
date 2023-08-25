@@ -26,7 +26,6 @@ class JobRepositoryImpl @Inject constructor(
         } catch (e: ApiError) {
             throw e
         } catch (e: Exception) {
-            Log.d("Error", e.message.toString())
             throw UnknownError
         }
     }

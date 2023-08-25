@@ -10,32 +10,38 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ru.netology.nework.auth.AppAuth
 import ru.netology.nework.dto.Coordinates
 import ru.netology.nework.dto.Event
-import ru.netology.nework.dto.Post
 import ru.netology.nework.error.ApiError
 import ru.netology.nework.model.LoadingStateModel
 import ru.netology.nework.repository.EventRepository
 import java.lang.Exception
 import java.text.DecimalFormat
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
-class EventsViewModel @Inject constructor(private val eventRepository: EventRepository) :
-    ViewModel() {
+class EventsViewModel @Inject constructor(
+    private val eventRepository: EventRepository, private val appAuth: AppAuth
+) : ViewModel() {
     val events: LiveData<List<Event>> = eventRepository.data.map { list ->
         list.map { event ->
+            val likeOwnerUsers =
+                event.users.filterKeys { it.toIntOrNull() in event.likeOwnerIds }.values.toList()
             val speakers =
                 event.users.filterKeys { it.toIntOrNull() in event.speakerIds }.values.toList()
             val participants =
                 event.users.filterKeys { it.toIntOrNull() in event.participantsIds }.values.toList()
             event.copy(
+                ownedByMe = appAuth.authStateFlow.value.id == event.authorId,
+                participatedByMe = event.participantsIds.contains(appAuth.authStateFlow.value.id),
                 coords = event.coords?.let { getValidCoords(it) },
                 speakerUsers = speakers,
-                participantUsers = participants
+                participantUsers = participants,
+                likeOwnerUsers = likeOwnerUsers
             )
         }
-
     }.asLiveData()
 
     private val _dataState = MutableLiveData<LoadingStateModel>()
@@ -59,9 +65,34 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
         _currentEvent.value = event
     }
 
-    fun loadUserEvents(userId: Int) {
-        _userEvents.value = events.value?.filter { event -> event.authorId == userId }
-        _dataState.value = LoadingStateModel()
+    fun updateCurrentEvent(id: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val event = eventRepository.getEvent(id).let { dbEvent ->
+                dbEvent.copy(
+                    participatedByMe = dbEvent.participantsIds.contains(appAuth.authStateFlow.value.id),
+                    ownedByMe = appAuth.authStateFlow.value.id == dbEvent.authorId,
+                    coords = dbEvent.coords?.let { getValidCoords(it) },
+                )
+            }
+            withContext(Dispatchers.Main) {
+                setCurrentEvent(event)
+            }
+        }
+    }
+
+    fun updateUserEvents(userId: Int) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val userEvents = eventRepository.getUserEvents(userId).map { event ->
+                event.copy(
+                    participatedByMe = event.participantsIds.contains(appAuth.authStateFlow.value.id),
+                    ownedByMe = appAuth.authStateFlow.value.id == event.authorId,
+                    coords = event.coords?.let { getValidCoords(it) },
+                )
+            }
+            withContext(Dispatchers.Main) {
+                _userEvents.value = userEvents
+            }
+        }
     }
 
     fun loadEvents() {
@@ -93,13 +124,7 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
                 val event = eventRepository.onLike(event)
                 withContext(Dispatchers.Main) {
                     setCurrentEvent(event)
-
-                    val currentEvents = userEvents.value?.toMutableList()
-                    currentEvents?.indexOfFirst { it.id == event.id }?.takeIf { it != -1 }
-                        ?.let { index ->
-                            currentEvents[index] = event
-                            _userEvents.value = currentEvents!!
-                        }
+                    updateUserEvents(event)
                 }
             } catch (e: ApiError) {
                 withContext(Dispatchers.Main) {
@@ -109,8 +134,45 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
         }
     }
 
+    fun deleteEvent(event: Event) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                eventRepository.deleteEvent(event.id)
+
+                withContext(Dispatchers.Main) {
+                    updateUserEvents(event)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun resetState() {
         _dataState.value = LoadingStateModel()
+    }
+
+    fun participate(event: Event) {
+        viewModelScope.launch {
+            try {
+                val event = if (event.participatedByMe) eventRepository.leaveEvent(event.id)
+                else eventRepository.participate(event.id)
+                withContext(Dispatchers.Main) {
+                    setCurrentEvent(event)
+                    updateUserEvents(event)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun updateUserEvents(event: Event) {
+        val currentEvents = userEvents.value?.toMutableList()
+        currentEvents?.indexOfFirst { it.id == event.id }?.takeIf { it != -1 }?.let { index ->
+            currentEvents[index] = event
+            _userEvents.value = currentEvents!!
+        }
     }
 
     private fun getValidCoords(coords: Coordinates): Coordinates {

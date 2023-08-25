@@ -43,5 +43,18 @@
     <string name="audio">Audio</string>
     <string name="video">Video</string>
     <string name="mention_user">Mention\u00A0user</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="participate">Participate</string>
+    <string name="leave">Leave</string>
+    <string name="event_description">Event description</string>
+    <string name="add_speaker">Add speaker</string>
+    <string name="set_time">Set time</string>
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
+    <string name="please_choose_event_date">Please, choose event date</string>
+    <string name="please_choose_a_future_date">Please choose a future date</string>
+    <string name="send_event">Send event</string>
+    <string name="invalid_coordinates_format">Invalid coordinates format</string>
 
 </resources>

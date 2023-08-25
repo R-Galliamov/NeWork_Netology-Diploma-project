@@ -1,7 +1,5 @@
 package ru.netology.nework.viewModel
 
-import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,17 +7,23 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.netology.nework.dto.Attachment
+import ru.netology.nework.dto.Coordinates
+import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
 import ru.netology.nework.model.LoadingStateModel
-import ru.netology.nework.model.PhotoModel
 import ru.netology.nework.model.requestModel.PostRequest
 import ru.netology.nework.repository.PostRepository
+import ru.netology.nework.repository.UserRepository
 import ru.netology.nework.util.SingleLiveEvent
 import javax.inject.Inject
 
 @HiltViewModel
-class NewPostViewModel @Inject constructor(private val postRepository: PostRepository) :
+class EditPostViewModel @Inject constructor(
+    private val postRepository: PostRepository,
+    private val userRepository: UserRepository,
+) :
     ViewModel() {
     private val emptyPost = PostRequest(content = "")
     private val _postRequest = MutableLiveData(emptyPost)
@@ -66,6 +70,12 @@ class NewPostViewModel @Inject constructor(private val postRepository: PostRepos
         _postRequest.value = _postRequest.value?.copy(link = link)
     }
 
+    fun setCoords(coords: String) {
+        val coordsList = coords.split(", ")
+        val coordinates = Coordinates(coordsList[0], coordsList[1])
+        _postRequest.value = _postRequest.value?.copy(coords = coordinates)
+    }
+
     fun addMentionUser(user: User) {
         val currentPostRequest = _postRequest.value ?: emptyPost
         if (currentPostRequest.mentionIds.contains(user.id)) {
@@ -89,12 +99,37 @@ class NewPostViewModel @Inject constructor(private val postRepository: PostRepos
                 try {
                     postRepository.savePost(_postRequest.value!!)
                     _postCreated.value = Unit
+                    _postRequest.value = emptyPost
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
         }
-        _postRequest.value = emptyPost
+    }
+
+    fun setPostData(post: Post) {
+        var postRequest = emptyPost
+        viewModelScope.launch(Dispatchers.IO) {
+            val mentionUsers = mutableListOf<User>()
+            post.mentionIds.forEach {
+                val user = userRepository.getUserById(it)
+                mentionUsers.add(user)
+            }
+            postRequest = PostRequest(
+                id = post.id,
+                content = post.content,
+                coords = post.coords,
+                link = post.link,
+                attachment = post.attachment,
+                mentionIds = post.mentionIds,
+                mentionUsers = mentionUsers
+            )
+            withContext(Dispatchers.Main) {
+                _postRequest.value = postRequest
+            }
+
+        }
+
     }
 
     fun clear() {

@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context=".ui.posts.NewPostFragment">
+        tools:context=".ui.posts.EditPostFragment">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -63,7 +63,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    android:hint="@string/what_s_new"
+                    android:hint="@string/event_description"
                     android:inputType="textMultiLine"
                     android:textColor="@color/black"
                     android:textSize="14sp" />
@@ -143,33 +143,59 @@
                     android:visibility="gone" />
 
                 <LinearLayout
-                    android:id="@+id/manageAttachmentButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
+                    android:padding="2dp"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/button_blue"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="20dp">
-
-                    <ImageView
-                        android:id="@+id/manageAttachmentIcon"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/attachment_icon" />
+                    android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/manageAttachmentText"
+                        android:id="@+id/eventTypeButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/button_gray_outlined"
                         android:ellipsize="end"
                         android:maxLines="1"
+                        android:paddingStart="10dp"
+                        android:paddingTop="2dp"
+                        android:paddingEnd="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:paddingBottom="2dp"
                         android:textColor="@color/black"
                         android:textSize="14sp"
-                        tools:text="@string/add_attachment" />
+                        tools:text="@string/offline" />
+
+                    <LinearLayout
+                        android:id="@+id/manageAttachmentButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/button_blue"
+                        android:orientation="horizontal"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="20dp">
+
+                        <ImageView
+                            android:id="@+id/manageAttachmentIcon"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/attachment_icon" />
+
+                        <TextView
+                            android:id="@+id/manageAttachmentText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:ellipsize="end"
+                            android:layout_gravity="center"
+                            android:maxLines="1"
+                            android:textColor="@color/black"
+                            android:textSize="14sp"
+                            tools:text="@string/add_attachment" />
+                    </LinearLayout>
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -199,7 +225,6 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/mentionedContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
@@ -210,14 +235,37 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:padding="2dp"
-                        android:src="@drawable/at_sign_icon" />
+                        android:src="@drawable/events_icon" />
 
                     <TextView
-                        android:id="@+id/mention"
+                        android:id="@+id/datetimeButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:text="@string/mention_someone"
+                        android:text="@string/set_time"
+                        android:textColor="?colorSecondary" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/speakersContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        android:src="@drawable/speakers_icon" />
+
+                    <TextView
+                        android:id="@+id/speakers"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="@string/add_speaker"
                         android:textColor="?colorSecondary" />
                 </LinearLayout>
 
@@ -235,21 +283,26 @@
                         android:padding="3dp"
                         android:src="@drawable/pin_icon" />
 
-                    <TextView
+                    <EditText
                         android:id="@+id/coords"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:textColor="@color/black"
-                        tools:text="Lat : Long" />
+                        android:hint="00.000000, 00.000000"
+                        android:lines="1"
+                        android:maxLength="20"
+                        android:maxLines="1"
+                        android:scrollHorizontally="true"
+                        android:singleLine="true"
+                        android:textColor="?colorSecondary"
+                        android:textSize="14sp" />
                 </LinearLayout>
 
-                <FrameLayout
+                <com.yandex.mapkit.mapview.MapView
                     android:id="@+id/map"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
-                    android:layout_marginTop="4dp"
-                    android:background="@color/black" />
+                    android:layout_marginTop="4dp" />
 
                 <TextView
                     android:id="@+id/error"
@@ -275,7 +328,7 @@
             android:paddingTop="12dp"
             android:paddingEnd="24dp"
             android:paddingBottom="12dp"
-            android:text="@string/send_post"
+            android:text="@string/send_event"
             android:textColor="@color/white"
             android:textStyle="bold" />
 

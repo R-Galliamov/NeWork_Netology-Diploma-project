@@ -4,11 +4,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import android.widget.PopupMenu
 import android.widget.Toast
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -28,6 +29,7 @@ import ru.netology.nework.error.ErrorHandler
 import ru.netology.nework.listeners.OnEventInteractionListener
 import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.player.VideoLifecycleObserver
+import ru.netology.nework.viewModel.EditEventViewModel
 import ru.netology.nework.viewModel.EventsViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
@@ -40,6 +42,7 @@ class UserEventsFragment : Fragment() {
         get() = _binding!!
 
     private val eventsViewModel: EventsViewModel by activityViewModels()
+    private val editEventViewModel: EditEventViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
 
     @Inject
@@ -48,8 +51,6 @@ class UserEventsFragment : Fragment() {
     @Inject
     lateinit var videoObserver: VideoLifecycleObserver
 
-    @Inject
-    lateinit var videoLifecycleObserver: VideoLifecycleObserver
     private var adapter: EventAdapter? = null
 
     override fun onCreateView(
@@ -65,14 +66,15 @@ class UserEventsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         lifecycle.addObserver(audioObserver)
+        lifecycle.addObserver(videoObserver)
 
         binding.usersContainer.visibility = View.GONE
         val usersRecyclerView = binding.recyclerViewUsers
         val usersAdapter = UserAdapter(object : UserAdapter.OnInteractionListener {
             override fun onItem(user: User) {
                 usersViewModel.setCurrentUser(user)
-                findNavController().navigate(R.id.action_userProfileFragment_self)
                 binding.usersContainer.visibility = View.GONE
+                findNavController().navigate(R.id.action_userProfileFragment_self)
             }
         })
         usersRecyclerView.adapter = usersAdapter
@@ -150,32 +152,22 @@ class UserEventsFragment : Fragment() {
                     ).show()
                 }
             }
+
+            override fun onMenu(view: View, event: Event) {
+                showMenu(view, event)
+            }
+
+            override fun onParticipate(event: Event) {
+                eventsViewModel.participate(event)
+            }
         }, audioObserver, videoObserver)
 
         val recyclerView = binding.recyclerView
         recyclerView.adapter = adapter
-        eventsViewModel.dataState.observe(viewLifecycleOwner) { state ->
-            if (state.errorState) {
-                if (state.errorObject.status == 401) {
-                    Toast.makeText(
-                        requireContext(),
-                        state.errorObject.status.toString(),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Snackbar.make(
-                        binding.root,
-                        getString(R.string.something_went_wrong),
-                        Snackbar.LENGTH_LONG
-                    ).setAction(getString(R.string.retry)) { eventsViewModel.loadEvents() }
-                        .show()
-                }
-            }
-        }
 
         usersViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
-                eventsViewModel.loadUserEvents(user.id)
+                eventsViewModel.updateUserEvents(user.id)
             }
         }
 
@@ -193,6 +185,28 @@ class UserEventsFragment : Fragment() {
                 ).show()
             }
         }
+    }
+
+    private fun showMenu(view: View, event: Event) {
+        val popUpMenu = PopupMenu(requireContext(), view)
+        popUpMenu.inflate(R.menu.post_event_menu)
+        popUpMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
+            when (menuItem.itemId) {
+                R.id.edit -> {
+                    editEventViewModel.setEventData(event)
+                    findNavController().navigate(R.id.action_userProfileFragment_to_editEventFragment)
+                    true
+                }
+
+                R.id.delete -> {
+                    eventsViewModel.deleteEvent(event)
+                    true
+                }
+
+                else -> false
+            }
+        }
+        popUpMenu.show()
     }
 
     override fun onDestroyView() {

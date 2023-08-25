@@ -8,15 +8,25 @@ import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.exoplayer2.ui.PlayerView
+import com.yandex.mapkit.Animation
+import com.yandex.mapkit.MapKitFactory
+import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.CameraPosition
+import com.yandex.mapkit.map.MapObjectCollection
+import com.yandex.mapkit.map.MapObjectTapListener
+import com.yandex.mapkit.map.PlacemarkMapObject
+import com.yandex.runtime.image.ImageProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -34,9 +44,11 @@ import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.player.VideoLifecycleObserver
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
+import ru.netology.nework.viewModel.EditPostViewModel
 import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class PostFragment : Fragment() {
@@ -46,6 +58,7 @@ class PostFragment : Fragment() {
         get() = _binding!!
     private val feedViewModel: FeedViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
+    private val editPostViewModel: EditPostViewModel by activityViewModels()
 
     private lateinit var onInteractionListener: OnPostInteractionListener
 
@@ -153,6 +166,15 @@ class PostFragment : Fragment() {
                     ).show()
                 }
             }
+
+            override fun onMenu(view: View, post: Post) {
+                showMenu(view, post)
+            }
+        }
+
+        val post = feedViewModel.currentPost.value
+        post?.let {
+            feedViewModel.updateCurrentPost(post.id)
         }
 
         feedViewModel.currentPost.observe(viewLifecycleOwner) { post ->
@@ -166,6 +188,7 @@ class PostFragment : Fragment() {
             setupDatetime(post)
             setupPostMenu(post)
             setupAttachments(post)
+            setupMap(post)
         }
 
         binding.overlay.setOnClickListener {
@@ -175,6 +198,33 @@ class PostFragment : Fragment() {
             findNavController().navigateUp()
         }
     }
+
+    private fun setupMap(post: Post) {
+        if (post.coords != null) {
+            binding.coordsContainer.visibility = View.VISIBLE
+            binding.map.visibility = View.VISIBLE
+            MapKitFactory.initialize(requireContext())
+            val lat = post.coords.lat.toDouble()
+            val long = post.coords.long.toDouble()
+            val location = Point(lat, long)
+
+            val imageProvider =
+                ImageProvider.fromResource(context, R.drawable.pin_icon_red)
+
+            binding.map.map.mapObjects.addPlacemark(location, imageProvider)
+
+            binding.map.map.move(
+                CameraPosition(
+                    location, 17.0f, 0.0f, 0.0f
+                ), Animation(Animation.Type.SMOOTH, 0f), null
+            )
+        } else {
+            binding.map.visibility = View.INVISIBLE
+            binding.coordsContainer.visibility = View.INVISIBLE
+        }
+    }
+
+
 
     private fun setupMentions(post: Post) {
         with(binding) {
@@ -193,9 +243,7 @@ class PostFragment : Fragment() {
 
                 val userPreview = post.users.filterKeys { it.toInt() == userId }.values.first()
                 spannableStringBuilder.append(
-                    userPreview.name,
-                    clickableSpan,
-                    SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
+                    userPreview.name, clickableSpan, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
                 if (index < post.mentionIds.size - 1) {
                     spannableStringBuilder.append(", ")
@@ -267,8 +315,7 @@ class PostFragment : Fragment() {
 
     private fun setupLink(post: Post) {
         with(binding) {
-            linkContainer.visibility =
-                if (post.link.isNullOrBlank()) View.GONE else View.VISIBLE
+            linkContainer.visibility = if (post.link.isNullOrBlank()) View.GONE else View.VISIBLE
             link.setOnClickListener {
                 onInteractionListener.onLink(post.link.toString())
             }
@@ -281,6 +328,9 @@ class PostFragment : Fragment() {
             binding.menu.visibility = View.VISIBLE
         } else {
             binding.menu.visibility = View.GONE
+        }
+        binding.menu.setOnClickListener {
+            onInteractionListener.onMenu(it, post)
         }
     }
 
@@ -307,9 +357,7 @@ class PostFragment : Fragment() {
                         thumbnail.visibility = View.GONE
                         videoPlayerView.visibility = View.VISIBLE
                         onInteractionListener.onVideo(
-                            binding.videoPlayerView,
-                            post.attachment,
-                            post.id
+                            binding.videoPlayerView, post.attachment, post.id
                         )
                     }
                 }
@@ -333,6 +381,29 @@ class PostFragment : Fragment() {
         }
     }
 
+    private fun showMenu(view: View, post: Post) {
+        val popUpMenu = PopupMenu(requireContext(), view)
+        popUpMenu.inflate(R.menu.post_event_menu)
+        popUpMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
+            when (menuItem.itemId) {
+                R.id.edit -> {
+                    editPostViewModel.setPostData(post)
+                    findNavController().navigate(R.id.action_postFragment_to_editPostFragment)
+                    true
+                }
+
+                R.id.delete -> {
+                    feedViewModel.deletePost(post)
+                    findNavController().navigateUp()
+                    true
+                }
+
+                else -> false
+            }
+        }
+        popUpMenu.show()
+    }
+
     private fun setupDatetime(post: Post) {
         with(binding) {
             date.text = DateTimeConverter.publishedToUiDate(post.published)
@@ -344,6 +415,19 @@ class PostFragment : Fragment() {
         val imageId = if (audioObserver.isPlaying) R.drawable.pause_icon else R.drawable.play_icon
         binding.playButton.setImageResource(imageId)
     }
+
+    override fun onStop() {
+        super.onStop()
+        binding.map.onStop()
+        MapKitFactory.getInstance().onStop()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        MapKitFactory.getInstance().onStart()
+        binding.map.onStart()
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()

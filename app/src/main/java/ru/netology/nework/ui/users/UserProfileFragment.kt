@@ -23,7 +23,6 @@ import ru.netology.nework.adapter.UserWallAdapter
 import ru.netology.nework.converters.DateTimeConverter
 import ru.netology.nework.databinding.FragmentUserProfileBinding
 import ru.netology.nework.dto.Job
-import ru.netology.nework.dto.User
 import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.player.VideoLifecycleObserver
 import ru.netology.nework.ui.events.UserEventsFragment
@@ -31,6 +30,8 @@ import ru.netology.nework.ui.posts.UserPostsFragment
 import ru.netology.nework.util.AndroidUtils
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.viewModel.AuthViewModel
+import ru.netology.nework.viewModel.EventsViewModel
+import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import java.text.SimpleDateFormat
 import javax.inject.Inject
@@ -43,6 +44,8 @@ class UserProfileFragment : Fragment() {
         get() = _binding!!
     private val usersViewModel: UsersViewModel by activityViewModels()
     private val authViewModel: AuthViewModel by activityViewModels()
+    private val feedViewModel: FeedViewModel by activityViewModels()
+    private val eventViewModel: EventsViewModel by activityViewModels()
 
     @Inject
     lateinit var audioObserver: AudioLifecycleObserver
@@ -76,6 +79,9 @@ class UserProfileFragment : Fragment() {
 
         usersViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
+                feedViewModel.updateUserPosts(user.id)
+                eventViewModel.updateUserEvents(user.id)
+
                 val isProfileOwner = authViewModel.authenticatedUser.value?.id == user.id
 
                 val jobsPreviewAdapter =
@@ -132,7 +138,7 @@ class UserProfileFragment : Fragment() {
                         signOutButton.visibility = View.VISIBLE
                         signOutButton.setOnClickListener {
                             authViewModel.signOutUser()
-                            findNavController().navigateUp()
+                            findNavController().navigate(R.id.action_userProfileFragment_to_holderFragment)
                         }
                         addJobContainer.visibility = View.VISIBLE
 
@@ -278,6 +284,10 @@ class UserProfileFragment : Fragment() {
     private fun sendJobData() {
         val job = getJobData()
         usersViewModel.saveJob(job)
+    }
+
+    override fun onPause() {
+        super.onPause()
     }
 
     override fun onDestroy() {

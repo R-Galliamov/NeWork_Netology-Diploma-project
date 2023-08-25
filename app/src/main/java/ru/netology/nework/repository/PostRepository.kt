@@ -14,5 +14,10 @@ interface PostRepository {
 
     suspend fun isDbEmpty(): Boolean
 
+    suspend fun deletePost(postId: Int)
+
     suspend fun upload(attachment: Attachment): Media
+
+    suspend fun getPost(id: Int): Post
+    suspend fun getUserPosts(userId: Int): List<Post>
 }

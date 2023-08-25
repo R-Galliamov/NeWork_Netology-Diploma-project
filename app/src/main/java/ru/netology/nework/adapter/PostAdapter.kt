@@ -127,6 +127,10 @@ class PostAdapter(
             } else {
                 binding.menu.visibility = View.GONE
             }
+
+            binding.menu.setOnClickListener {
+                onInteractionListener.onMenu(it, post)
+            }
         }
 
         private fun setupVideoPlayButton() {

@@ -4,17 +4,17 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import android.widget.PopupMenu
 import android.widget.Toast
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import ru.netology.nework.R
@@ -28,7 +28,7 @@ import ru.netology.nework.error.ErrorHandler
 import ru.netology.nework.listeners.OnPostInteractionListener
 import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.player.VideoLifecycleObserver
-import ru.netology.nework.viewModel.AuthViewModel
+import ru.netology.nework.viewModel.EditPostViewModel
 import ru.netology.nework.viewModel.FeedViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
@@ -41,7 +41,7 @@ class UserPostsFragment : Fragment() {
         get() = _binding!!
 
     private val feedViewModel: FeedViewModel by activityViewModels()
-    private val authViewModel: AuthViewModel by activityViewModels()
+    private val editPostViewModel: EditPostViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
 
     @Inject
@@ -65,6 +65,7 @@ class UserPostsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         lifecycle.addObserver(audioObserver)
+        lifecycle.addObserver(videoObserver)
 
         binding.usersContainer.visibility = View.GONE
         val usersRecyclerView = binding.recyclerViewUsers
@@ -105,6 +106,11 @@ class UserPostsFragment : Fragment() {
                 }
             }
 
+            override fun onContent(post: Post) {
+                feedViewModel.setCurrentPost(post)
+                findNavController().navigate(R.id.action_userProfileFragment_to_postFragment)
+            }
+
             override fun onLink(url: String) {
                 if (URLUtil.isValidUrl(url)) {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
@@ -116,11 +122,6 @@ class UserPostsFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-            }
-
-            override fun onContent(post: Post) {
-                feedViewModel.setCurrentPost(post)
-                findNavController().navigate(R.id.action_userProfileFragment_to_postFragment)
             }
 
             override fun onImage() {
@@ -150,15 +151,18 @@ class UserPostsFragment : Fragment() {
                     ).show()
                 }
             }
+
+            override fun onMenu(view: View, post: Post) {
+                showMenu(view, post)
+            }
         }, audioObserver, videoObserver)
 
         val recyclerView = binding.recyclerView
         recyclerView.adapter = adapter
 
-
         usersViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
-                feedViewModel.loadUserPosts(user.id)
+                feedViewModel.updateUserPosts(user.id)
             }
         }
 
@@ -176,6 +180,28 @@ class UserPostsFragment : Fragment() {
                 ).show()
             }
         }
+    }
+
+    private fun showMenu(view: View, post: Post) {
+        val popUpMenu = PopupMenu(requireContext(), view)
+        popUpMenu.inflate(R.menu.post_event_menu)
+        popUpMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
+            when (menuItem.itemId) {
+                R.id.edit -> {
+                    editPostViewModel.setPostData(post)
+                    findNavController().navigate(R.id.action_userProfileFragment_to_editPostFragment)
+                    true
+                }
+
+                R.id.delete -> {
+                    feedViewModel.deletePost(post)
+                    true
+                }
+
+                else -> false
+            }
+        }
+        popUpMenu.show()
     }
 
     override fun onDestroyView() {

@@ -1,6 +1,5 @@
 package ru.netology.nework.viewModel
 
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,22 +13,17 @@ import kotlinx.coroutines.withContext
 import ru.netology.nework.auth.AppAuth
 import ru.netology.nework.dto.Coordinates
 import ru.netology.nework.dto.Post
-import ru.netology.nework.dto.User
-import ru.netology.nework.dto.UserPreview
 import ru.netology.nework.error.ApiError
 import ru.netology.nework.model.LoadingStateModel
 import ru.netology.nework.repository.PostRepository
 import java.lang.Exception
-import java.lang.NullPointerException
 import java.text.DecimalFormat
 import javax.inject.Inject
 
 @HiltViewModel
 class FeedViewModel @Inject constructor(
-    private val postRepository: PostRepository,
-    private val appAuth: AppAuth
-) :
-    ViewModel() {
+    private val postRepository: PostRepository, private val appAuth: AppAuth
+) : ViewModel() {
 
     val posts: LiveData<List<Post>> = postRepository.data.map { posts ->
         posts.map { post ->
@@ -38,6 +32,7 @@ class FeedViewModel @Inject constructor(
             val mentionUsers =
                 post.users.filterKeys { it.toIntOrNull() in post.mentionIds }.values.toList()
             post.copy(
+                ownedByMe = appAuth.authStateFlow.value.id == post.authorId,
                 coords = post.coords?.let { getValidCoords(it) },
                 mentionUsers = mentionUsers.map { it.copy(name = it.name.replace(' ', '\u00A0')) },
                 likeOwnerUsers = likeOwnerUsers
@@ -58,17 +53,40 @@ class FeedViewModel @Inject constructor(
     val userPosts: LiveData<List<Post>>
         get() = _userPosts
 
+    init {
+        loadPosts()
+    }
+
     fun setCurrentPost(post: Post) {
         _currentPost.value = post
     }
 
-    fun loadUserPosts(userId: Int) {
-        _userPosts.value = posts.value?.filter { post -> post.authorId == userId }
-        _dataState.value = LoadingStateModel()
+    fun updateUserPosts(userId: Int) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val userPosts = postRepository.getUserPosts(userId).map { post ->
+                post.copy(
+                    ownedByMe = appAuth.authStateFlow.value.id == post.authorId,
+                    coords = post.coords?.let { getValidCoords(it) },
+                )
+            }
+            withContext(Dispatchers.Main) {
+                _userPosts.value = userPosts
+            }
+        }
     }
 
-    init {
-        loadPosts()
+    fun updateCurrentPost(id: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val post = postRepository.getPost(id).let { dbPost ->
+                dbPost.copy(
+                    ownedByMe = appAuth.authStateFlow.value.id == dbPost.authorId,
+                    coords = dbPost.coords?.let { getValidCoords(it) },
+                )
+            }
+            withContext(Dispatchers.Main) {
+                setCurrentPost(post)
+            }
+        }
     }
 
     fun loadPosts() {
@@ -101,21 +119,38 @@ class FeedViewModel @Inject constructor(
                 val post = postRepository.onLike(post)
                 withContext(Dispatchers.Main) {
                     setCurrentPost(post)
-
-                    val currentPosts = userPosts.value?.toMutableList()
-                    currentPosts?.indexOfFirst { it.id == post.id }?.takeIf { it != -1 }
-                        ?.let { index ->
-                            currentPosts[index] = post
-                            _userPosts.value = currentPosts!!
-                        }
+                    updateUserPosts(post)
                 }
             } catch (e: ApiError) {
                 withContext(Dispatchers.Main) {
                     _dataState.value = LoadingStateModel(errorState = true, errorObject = e)
                 }
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 LoadingStateModel(errorState = true)
+            }
+        }
+    }
+
+    fun deletePost(post: Post) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                postRepository.deletePost(post.id)
+
+                withContext(Dispatchers.Main) {
+                    updateUserPosts(post)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun updateUserPosts(post: Post) {
+        val currentPosts = userPosts.value?.toMutableList()
+        currentPosts?.indexOfFirst { it.id == post.id }?.takeIf { it != -1 }?.let { index ->
+            currentPosts[index] = post
+            currentPosts.let {
+                _userPosts.value = it
             }
         }
     }

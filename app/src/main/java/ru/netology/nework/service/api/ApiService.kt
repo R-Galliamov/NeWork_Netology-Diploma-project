@@ -22,6 +22,7 @@ import ru.netology.nework.dto.User
 import ru.netology.nework.dto.AuthState
 import ru.netology.nework.dto.Job
 import ru.netology.nework.dto.Media
+import ru.netology.nework.model.requestModel.EventRequest
 import ru.netology.nework.model.requestModel.PostRequest
 
 private const val BASE_URL = "https://netomedia.ru/"
@@ -57,6 +58,9 @@ interface ApiService {
     @POST("api/posts/")
     suspend fun savePost(@Body postRequest: PostRequest): Response<Post>
 
+    @DELETE("api/posts/{id}/")
+    suspend fun deletePost(@Path("id") id: Int)
+
     //Events
     @GET("api/events/")
     suspend fun getAllEvents(): Response<List<Event>>
@@ -69,6 +73,18 @@ interface ApiService {
 
     @DELETE("api/events/{id}/likes")
     suspend fun dislikeEventById(@Path("id") id: Int): Response<Event>
+
+    @POST("api/events/")
+    suspend fun saveEvent(@Body eventRequest: EventRequest): Response<Event>
+
+    @DELETE("api/events/{id}/")
+    suspend fun deleteEvent(@Path("id") id: Int)
+
+    @POST("api/events/{id}/participants")
+    suspend fun participateEvent(@Path("id") id: Int) : Response<Event>
+
+    @DELETE("api/events/{id}/participants")
+    suspend fun leaveEvent(@Path("id") id: Int) : Response<Event>
 
     //Users
     @GET("api/users/")

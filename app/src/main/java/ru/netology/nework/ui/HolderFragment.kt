@@ -33,9 +33,7 @@ class HolderFragment : Fragment() {
     private val navStateViewModel: NavStateViewModel by activityViewModels()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentHolderBinding.inflate(inflater, container, false)
         return binding.root
@@ -111,12 +109,20 @@ class HolderFragment : Fragment() {
         popUpMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
             when (menuItem.itemId) {
                 R.id.add_post -> {
-                    findNavController().navigate(R.id.action_holderFragment_to_newPostFragment)
+                    if (authViewModel.authenticated) {
+                        findNavController().navigate(R.id.action_holderFragment_to_editPostFragment)
+                    } else {
+                        findNavController().navigate(R.id.action_holderFragment_to_authFragment)
+                    }
                     true
                 }
 
                 R.id.add_event -> {
-                    findNavController().navigate(R.id.action_holderFragment_to_newEventFragment)
+                    if (authViewModel.authenticated) {
+                        findNavController().navigate(R.id.action_holderFragment_to_editEventFragment)
+                    } else {
+                        findNavController().navigate(R.id.action_holderFragment_to_authFragment)
+                    }
                     true
                 }
 

@@ -1,5 +1,6 @@
 package ru.netology.nework.listeners
 
+import android.view.View
 import com.google.android.exoplayer2.ui.PlayerView
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
@@ -13,4 +14,6 @@ interface OnPostInteractionListener {
     fun onImage()
     fun onVideo(playerView: PlayerView, video: Attachment, postId: Int)
     fun onAudio(audio: Attachment, postId: Int)
+
+    fun onMenu(view: View, post: Post)
 }

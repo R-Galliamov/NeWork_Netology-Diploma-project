@@ -8,9 +8,11 @@ import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -34,6 +36,7 @@ import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.player.VideoLifecycleObserver
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
+import ru.netology.nework.viewModel.EditEventViewModel
 import ru.netology.nework.viewModel.EventsViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import javax.inject.Inject
@@ -45,6 +48,7 @@ class EventFragment : Fragment() {
     private val binding: FragmentEventBinding
         get() = _binding!!
     private val eventsViewModel: EventsViewModel by activityViewModels()
+    private val editEventViewModel: EditEventViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
     lateinit var onInteractionListener: OnEventInteractionListener
 
@@ -54,13 +58,8 @@ class EventFragment : Fragment() {
     @Inject
     lateinit var videoObserver: VideoLifecycleObserver
 
-    @Inject
-    lateinit var videoLifecycleObserver: VideoLifecycleObserver
-
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentEventBinding.inflate(inflater, container, false)
         return binding.root
@@ -109,9 +108,7 @@ class EventFragment : Fragment() {
                     startActivity(intent)
                 } else {
                     Toast.makeText(
-                        requireContext(),
-                        getString(R.string.invalid_link),
-                        Toast.LENGTH_SHORT
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
                     ).show()
                 }
             }
@@ -155,12 +152,23 @@ class EventFragment : Fragment() {
                     }
                 } else {
                     Toast.makeText(
-                        requireContext(),
-                        getString(R.string.invalid_link),
-                        Toast.LENGTH_SHORT
+                        requireContext(), getString(R.string.invalid_link), Toast.LENGTH_SHORT
                     ).show()
                 }
             }
+
+            override fun onMenu(view: View, event: Event) {
+                showMenu(view, event)
+            }
+
+            override fun onParticipate(event: Event) {
+                eventsViewModel.participate(event)
+            }
+        }
+
+        val event = eventsViewModel.currentEvent.value
+        event?.let {
+            eventsViewModel.updateCurrentEvent(event.id)
         }
 
         eventsViewModel.currentEvent.observe(viewLifecycleOwner) { event ->
@@ -175,9 +183,45 @@ class EventFragment : Fragment() {
             setupDatetime(event)
             setupAttachments(event)
             setupEventMenu(event)
+            setupParticipateButton(event)
+            setupOnline(event)
 
             binding.backButton.setOnClickListener {
                 findNavController().navigateUp()
+            }
+        }
+    }
+
+    private fun showMenu(view: View, event: Event) {
+        val popUpMenu = PopupMenu(requireContext(), view)
+        popUpMenu.inflate(R.menu.post_event_menu)
+        popUpMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
+            when (menuItem.itemId) {
+                R.id.edit -> {
+                    editEventViewModel.setEventData(event)
+                    findNavController().navigate(R.id.action_eventFragment_to_editEventFragment)
+                    true
+                }
+
+                R.id.delete -> {
+                    eventsViewModel.deleteEvent(event)
+                    findNavController().navigateUp()
+                    true
+                }
+
+                else -> false
+            }
+        }
+        popUpMenu.show()
+    }
+
+    private fun setupParticipateButton(event: Event) {
+        val text = if (!event.participatedByMe) requireContext().getText(R.string.participate)
+        else requireContext().getText(R.string.leave)
+        with(binding) {
+            participateButton.text = text
+            participateButton.setOnClickListener {
+                onInteractionListener.onParticipate(event)
             }
         }
     }
@@ -250,9 +294,7 @@ class EventFragment : Fragment() {
                         thumbnail.visibility = View.GONE
                         videoPlayerView.visibility = View.VISIBLE
                         onInteractionListener.onVideo(
-                            binding.videoPlayerView,
-                            event.attachment,
-                            event.id
+                            binding.videoPlayerView, event.attachment, event.id
                         )
                     }
                 }
@@ -276,6 +318,14 @@ class EventFragment : Fragment() {
         }
     }
 
+    private fun setupOnline(event: Event) {
+        when (event.type) {
+            Event.Type.OFFLINE -> binding.online.visibility = View.GONE
+            Event.Type.ONLINE -> binding.online.visibility = View.VISIBLE
+        }
+    }
+
+
     private fun setupOnUser(event: Event) {
         with(binding) {
             authorAvatar.setOnClickListener {
@@ -292,8 +342,7 @@ class EventFragment : Fragment() {
 
     private fun setupLink(event: Event) {
         with(binding) {
-            linkContainer.visibility =
-                if (event.link.isNullOrBlank()) View.GONE else View.VISIBLE
+            linkContainer.visibility = if (event.link.isNullOrBlank()) View.GONE else View.VISIBLE
             link.setOnClickListener {
                 onInteractionListener.onLink(event.link.toString())
             }
@@ -315,6 +364,9 @@ class EventFragment : Fragment() {
             binding.menu.visibility = View.VISIBLE
         } else {
             binding.menu.visibility = View.GONE
+        }
+        binding.menu.setOnClickListener {
+            onInteractionListener.onMenu(it, event)
         }
     }
 
@@ -340,12 +392,9 @@ class EventFragment : Fragment() {
                 }
             }
 
-            val userPreview =
-                event.users.filterKeys { it.toInt() == userId }.values.first()
+            val userPreview = event.users.filterKeys { it.toInt() == userId }.values.first()
             spannableStringBuilder.append(
-                userPreview.name,
-                clickableSpan,
-                SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
+                userPreview.name, clickableSpan, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
             )
             if (index < ids.size - 1) {
                 spannableStringBuilder.append(", ")
@@ -362,9 +411,7 @@ class EventFragment : Fragment() {
     }
 
     private fun updatePlayerUI() {
-        val imageId =
-            if (audioObserver.isPlaying) R.drawable.pause_icon else
-                R.drawable.play_icon
+        val imageId = if (audioObserver.isPlaying) R.drawable.pause_icon else R.drawable.play_icon
         binding.playButton.setImageResource(imageId)
     }
 

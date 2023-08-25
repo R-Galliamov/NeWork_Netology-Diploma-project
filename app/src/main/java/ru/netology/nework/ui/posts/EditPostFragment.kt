@@ -11,6 +11,7 @@ import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -33,29 +34,30 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.netology.nework.R
 import ru.netology.nework.adapter.UserAdapter
-import ru.netology.nework.databinding.FragmentNewPostBinding
+import ru.netology.nework.databinding.FragmentEditPostBinding
 import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.User
 import ru.netology.nework.model.requestModel.PostRequest
 import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.player.VideoLifecycleObserver
+import ru.netology.nework.util.AndroidUtils
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.view.loadImageAttachment
 import ru.netology.nework.viewModel.AuthViewModel
-import ru.netology.nework.viewModel.NewPostViewModel
+import ru.netology.nework.viewModel.EditPostViewModel
 import ru.netology.nework.viewModel.UsersViewModel
 import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class NewPostFragment : Fragment() {
+class EditPostFragment : Fragment() {
 
-    private var _binding: FragmentNewPostBinding? = null
-    private val binding: FragmentNewPostBinding
+    private var _binding: FragmentEditPostBinding? = null
+    private val binding: FragmentEditPostBinding
         get() = _binding!!
 
     private val authViewModel: AuthViewModel by activityViewModels()
-    private val newPostViewModel: NewPostViewModel by activityViewModels()
+    private val editPostViewModel: EditPostViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
 
     private lateinit var usersAdapter: UserAdapter
@@ -70,7 +72,7 @@ class NewPostFragment : Fragment() {
                 }
 
                 Activity.RESULT_OK -> {
-                    newPostViewModel.setPhoto(it.data?.data.toString())
+                    editPostViewModel.setPhoto(it.data?.data.toString())
                 }
             }
         }
@@ -78,14 +80,14 @@ class NewPostFragment : Fragment() {
     private val getVideo =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { videoUri ->
-                newPostViewModel.setVideo(videoUri.toString())
+                editPostViewModel.setVideo(videoUri.toString())
             }
         }
 
     private val getAudio =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { audioUri ->
-                newPostViewModel.setAudio(audioUri.toString())
+                editPostViewModel.setAudio(audioUri.toString())
             }
         }
 
@@ -98,7 +100,7 @@ class NewPostFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentNewPostBinding.inflate(inflater, container, false)
+        _binding = FragmentEditPostBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -108,19 +110,25 @@ class NewPostFragment : Fragment() {
         lifecycle.addObserver(videoObserver)
         setupUserAdapter()
         val user = authViewModel.authenticatedUser.value
-        if (user != null) {
-            setupUserData(user)
-        }
+        user?.let { setupUserData(user) }
         binding.usersContainer.visibility = View.GONE
-
         usersViewModel.users.observe(viewLifecycleOwner) {
             usersAdapter.submitList(usersViewModel.users.value)
         }
-
-        newPostViewModel.postRequest.observe(viewLifecycleOwner) { post ->
+        var editDataSet = false
+        editPostViewModel.postRequest.observe(viewLifecycleOwner) { post ->
+            Log.d("App log", post.toString())
             setupAttachment(post.attachment)
             setupMentions(post)
+            if (!editDataSet && post.id != 0) {
+                Log.d("App log", post.toString())
+                setupEditData(post)
+                editDataSet = true
+            }
+        }
 
+        editPostViewModel.postCreated.observe(viewLifecycleOwner) {
+            findNavController().navigateUp()
         }
 
         binding.apply {
@@ -129,14 +137,24 @@ class NewPostFragment : Fragment() {
                 findNavController().navigateUp()
             }
             sendData.setOnClickListener {
+                AndroidUtils.hideKeyboard(requireView())
                 if (checkContent()) {
-                    sendData()
-                    findNavController().navigateUp()
+                    if (checkCoords()) {
+                        sendData()
+                    }
                 }
             }
             overlay.setOnClickListener {
                 usersContainer.visibility = View.GONE
             }
+        }
+    }
+
+    private fun setupEditData(post: PostRequest) {
+        with(binding) {
+            editContent.setText(post.content)
+            link.setText(post.link)
+            editContent.setSelection(post.content.length)
         }
     }
 
@@ -235,7 +253,7 @@ class NewPostFragment : Fragment() {
                 manageAttachmentIcon.setImageResource(R.drawable.cross_icon)
                 manageAttachmentText.text = getString(R.string.remove_attachment)
                 manageAttachmentButton.setOnClickListener {
-                    newPostViewModel.removeAttachment()
+                    editPostViewModel.removeAttachment()
                 }
             } else {
                 manageAttachmentIcon.setImageResource(R.drawable.attachment_icon)
@@ -280,7 +298,7 @@ class NewPostFragment : Fragment() {
     }
 
     private fun addMentionUser(user: User) {
-        newPostViewModel.addMentionUser(user)
+        editPostViewModel.addMentionUser(user)
     }
 
     private fun setupUserAdapter() {
@@ -301,7 +319,7 @@ class NewPostFragment : Fragment() {
     }
 
     private fun saveContent(content: String) {
-        newPostViewModel.setContent(content)
+        editPostViewModel.setContent(content)
     }
 
     private fun saveLink() {
@@ -309,7 +327,15 @@ class NewPostFragment : Fragment() {
         if (link.isBlank()) {
             return
         }
-        newPostViewModel.setLink(link)
+        editPostViewModel.setLink(link)
+    }
+
+    private fun saveCoords() {
+        val coords = binding.coords.text.toString()
+        if (coords.isBlank()) {
+            return
+        }
+        editPostViewModel.setCoords(coords)
     }
 
     private fun setupMentions(post: PostRequest) {
@@ -352,6 +378,7 @@ class NewPostFragment : Fragment() {
 
             val addClickableSpan = object : ClickableSpan() {
                 override fun onClick(view: View) {
+                    AndroidUtils.hideKeyboard(requireView())
                     binding.usersContainer.visibility = View.VISIBLE
                 }
 
@@ -376,7 +403,7 @@ class NewPostFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             val user = usersViewModel.getUserById(userId)
             usersViewModel.setCurrentUser(user)
-            findNavController().navigate(R.id.action_newPostFragment_to_userProfileFragment)
+            findNavController().navigate(R.id.action_editPostFragment_to_userProfileFragment)
         }
     }
 
@@ -390,16 +417,30 @@ class NewPostFragment : Fragment() {
         return true
     }
 
+    private fun checkCoords(): Boolean {
+        val coords = binding.coords.text
+        if (coords.isNotBlank()) {
+            val pattern = """^-?\d+\.\d+,\s?-?\d+\.\d+$""".toRegex()
+            if (!pattern.matches(coords)) {
+                binding.error.visibility = View.VISIBLE
+                binding.error.text = getString(R.string.invalid_coordinates_format)
+                return false
+            }
+        }
+        return true
+    }
+
     private fun sendData() {
         val content = binding.editContent.text.toString()
         saveContent(content)
         saveLink()
-        newPostViewModel.savePost()
+        saveCoords()
+        editPostViewModel.savePost()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        newPostViewModel.clear()
+        editPostViewModel.clear()
         _binding = null
     }
 }

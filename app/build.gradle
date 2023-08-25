@@ -42,8 +42,6 @@ android {
 }
 
 dependencies {
-
-
     def retrofit_version = "2.9.0"
     def retrofitgson_version = "2.9.0"
     def okhttplogging_version = "4.11.0"
@@ -56,7 +54,14 @@ dependencies {
     def imagepicker_version = "2.1"
     def exoplayer_version = "2.19.1"
     def media_metadata_retriever_version = "1.0.14"
+    def datetime_picker_version = "4.2.3"
+    def yandex_map_kit_version="4.3.1-lite"
 
+    //Yandex mapkit
+    implementation "com.yandex.android:maps.mobile:$yandex_map_kit_version"
+
+    //Datetime picker
+    implementation "com.wdullaer:materialdatetimepicker:$datetime_picker_version"
 
     //ExoPlayer
     implementation "com.google.android.exoplayer:exoplayer:$exoplayer_version"

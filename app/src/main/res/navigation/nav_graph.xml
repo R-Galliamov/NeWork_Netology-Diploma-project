@@ -9,8 +9,8 @@
         android:name="ru.netology.nework.ui.HolderFragment"
         android:label="HolderFragment">
         <action
-            android:id="@+id/action_holderFragment_to_newPostFragment"
-            app:destination="@id/newPostFragment" />
+            android:id="@+id/action_holderFragment_to_editPostFragment"
+            app:destination="@id/editPostFragment" />
         <action
             android:id="@+id/action_holderFragment_to_authFragment"
             app:destination="@id/authFragment" />
@@ -18,8 +18,8 @@
             android:id="@+id/action_holderFragment_to_userProfileFragment"
             app:destination="@id/userProfileFragment" />
         <action
-            android:id="@+id/action_holderFragment_to_newEventFragment"
-            app:destination="@id/newEventFragment" />
+            android:id="@+id/action_holderFragment_to_editEventFragment"
+            app:destination="@id/editEventFragment" />
         <action
             android:id="@+id/action_holderFragment_to_postFragment"
             app:destination="@id/postFragment" />
@@ -28,11 +28,11 @@
             app:destination="@id/eventFragment" />
     </fragment>
     <fragment
-        android:id="@+id/newPostFragment"
-        android:name="ru.netology.nework.ui.posts.NewPostFragment"
-        android:label="NewPostFragment" >
+        android:id="@+id/editPostFragment"
+        android:name="ru.netology.nework.ui.posts.EditPostFragment"
+        android:label="EditPostFragment">
         <action
-            android:id="@+id/action_newPostFragment_to_userProfileFragment"
+            android:id="@+id/action_editPostFragment_to_userProfileFragment"
             app:destination="@id/userProfileFragment" />
     </fragment>
     <fragment
@@ -52,11 +52,24 @@
         <action
             android:id="@+id/action_userProfileFragment_self"
             app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_userProfileFragment_to_editPostFragment"
+            app:destination="@id/editPostFragment" />
+        <action
+            android:id="@+id/action_userProfileFragment_to_editEventFragment"
+            app:destination="@id/editEventFragment" />
+        <action
+            android:id="@+id/action_userProfileFragment_to_holderFragment"
+            app:destination="@id/holderFragment" />
     </fragment>
     <fragment
-        android:id="@+id/newEventFragment"
-        android:name="ru.netology.nework.ui.events.NewEventFragment"
-        android:label="NewEventFragment" />
+        android:id="@+id/editEventFragment"
+        android:name="ru.netology.nework.ui.events.EditEventFragment"
+        android:label="EditEventFragment" >
+        <action
+            android:id="@+id/action_editEventFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
+    </fragment>
     <fragment
         android:id="@+id/postFragment"
         android:name="ru.netology.nework.ui.posts.PostFragment"
@@ -64,6 +77,9 @@
         <action
             android:id="@+id/action_postFragment_to_userProfileFragment"
             app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_postFragment_to_editPostFragment"
+            app:destination="@id/editPostFragment" />
     </fragment>
     <fragment
         android:id="@+id/eventFragment"
@@ -72,5 +88,9 @@
         <action
             android:id="@+id/action_eventFragment_to_userProfileFragment"
             app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_eventFragment_to_editEventFragment"
+            app:destination="@id/editEventFragment" />
+
     </fragment>
 </navigation>

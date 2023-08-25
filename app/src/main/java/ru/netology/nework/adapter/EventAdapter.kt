@@ -26,8 +26,7 @@ class EventAdapter(
     private val onInteractionListener: OnEventInteractionListener,
     private val audioPlayer: AudioPlayer,
     private val videoPlayer: VideoPlayer
-) :
-    ListAdapter<Event, EventAdapter.EventViewHolder>(EventDiffCallback()) {
+) : ListAdapter<Event, EventAdapter.EventViewHolder>(EventDiffCallback()) {
 
     private var currentMediaId = -1
     private var trackProgress = 0
@@ -65,6 +64,31 @@ class EventAdapter(
             setupAttachments(event)
             setupDatetime(event)
             setupEventMenu(event)
+            setupParticipateButton(event)
+            setupOnline(event)
+        }
+
+        private fun setupOnline(event: Event) {
+            when (event.type) {
+                Event.Type.OFFLINE -> binding.online.visibility = View.GONE
+                Event.Type.ONLINE -> {
+                    binding.online.visibility = View.VISIBLE
+                    binding.online.text = itemView.context.getText(R.string.online)
+                }
+            }
+        }
+
+        private fun setupParticipateButton(event: Event) {
+            val text =
+                if (!event.participatedByMe) itemView.context.getText(R.string.participate) else itemView.context.getText(
+                    R.string.leave
+                )
+            with(binding) {
+                participateButton.text = text
+                participateButton.setOnClickListener {
+                    onInteractionListener.onParticipate(event)
+                }
+            }
         }
 
         private fun setupUserData(event: Event) {
@@ -190,9 +214,7 @@ class EventAdapter(
                             thumbnail.visibility = View.GONE
                             videoPlayerView.visibility = View.VISIBLE
                             onInteractionListener.onVideo(
-                                binding.videoPlayerView,
-                                event.attachment,
-                                event.id
+                                binding.videoPlayerView, event.attachment, event.id
                             )
                         }
                     }
@@ -223,6 +245,9 @@ class EventAdapter(
             } else {
                 binding.menu.visibility = View.GONE
             }
+            binding.menu.setOnClickListener {
+                onInteractionListener.onMenu(it, event)
+            }
         }
 
         private fun setupPlayButton(event: Event) {
@@ -251,34 +276,31 @@ class EventAdapter(
             }
         }
 
-    }
+        private fun getSpannableBuilder(ids: List<Int>, event: Event): SpannableStringBuilder {
+            val spannableStringBuilder = SpannableStringBuilder()
+            ids.forEachIndexed { index, userId ->
+                val clickableSpan = object : ClickableSpan() {
+                    override fun onClick(view: View) {
+                        onInteractionListener.onUser(userId)
+                    }
 
-    private fun getSpannableBuilder(ids: List<Int>, event: Event): SpannableStringBuilder {
-        val spannableStringBuilder = SpannableStringBuilder()
-        ids.forEachIndexed { index, userId ->
-            val clickableSpan = object : ClickableSpan() {
-                override fun onClick(view: View) {
-                    onInteractionListener.onUser(userId)
+                    override fun updateDrawState(ds: TextPaint) {
+                        super.updateDrawState(ds)
+                        ds.isUnderlineText = false
+                    }
                 }
 
-                override fun updateDrawState(ds: TextPaint) {
-                    super.updateDrawState(ds)
-                    ds.isUnderlineText = false
+                val userPreview = event.users.filterKeys { it.toInt() == userId }.values.first()
+                spannableStringBuilder.append(
+                    userPreview.name, clickableSpan, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                if (index < ids.size - 1) {
+                    spannableStringBuilder.append(", ")
                 }
             }
-
-            val userPreview =
-                event.users.filterKeys { it.toInt() == userId }.values.first()
-            spannableStringBuilder.append(
-                userPreview.name,
-                clickableSpan,
-                SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            if (index < ids.size - 1) {
-                spannableStringBuilder.append(", ")
-            }
+            return spannableStringBuilder
         }
-        return spannableStringBuilder
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {

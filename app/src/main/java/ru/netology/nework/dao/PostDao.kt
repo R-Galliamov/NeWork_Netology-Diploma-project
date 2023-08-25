@@ -19,8 +19,14 @@ interface PostDao {
     suspend fun upsertPost(posts: List<PostEntity>)
 
     @Query("DELETE FROM PostEntity WHERE id = :id")
-    suspend fun deletePostById(id: Int)
+    suspend fun deletePost(id: Int)
 
     @Query("SELECT COUNT(*) FROM PostEntity")
     fun getRowCount(): Int
+
+    @Query("SELECT * FROM PostEntity WHERE authorId = :userId")
+    fun getUserPosts(userId: Int): List<PostEntity>
+
+    @Query("SELECT * FROM PostEntity WHERE id = :id")
+    suspend fun getPost(id: Int): PostEntity
 }

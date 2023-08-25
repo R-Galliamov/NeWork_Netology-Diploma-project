@@ -12,7 +12,7 @@ class DateTimeConverter {
             return LocalDateTime.parse(datetime, format)
         }
 
-        private fun datetimeToLocalDateTime(datetime: String): LocalDateTime {
+        fun apiEventFormatToLocalDateTime(datetime: String): LocalDateTime {
             val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
             return LocalDateTime.parse(datetime, format)
         }
@@ -51,6 +51,11 @@ class DateTimeConverter {
             val outputDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
             outputDateFormat.timeZone = TimeZone.getTimeZone("UTC")
             return outputDateFormat.format(inputDate)
+        }
+
+        fun localDateTimeToApiEventFormat(localDateTime: LocalDateTime): String {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+            return localDateTime.format(formatter)
         }
     }
 }

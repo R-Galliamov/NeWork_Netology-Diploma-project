@@ -1,5 +1,7 @@
 package ru.netology.nework.error
 
+import android.util.Log
+
 class ErrorHandler {
     companion object {
         fun getApiErrorDescriptor(e: ApiError): String {
@@ -11,6 +13,7 @@ class ErrorHandler {
                 500 -> "Whoops! Our server seems to be having a bad day. Try again later."
                 else -> "Hmm, something unexpected happened. Try again later"
             }
+
         }
     }
 }
