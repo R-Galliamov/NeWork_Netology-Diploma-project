@@ -4,10 +4,12 @@ import android.app.Activity
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.TextPaint
+import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
@@ -17,9 +19,12 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -29,6 +34,12 @@ import com.github.dhaval2404.imagepicker.constant.ImageProvider
 import com.google.android.material.snackbar.Snackbar
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog
+import com.yandex.mapkit.Animation
+import com.yandex.mapkit.MapKitFactory
+import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.CameraPosition
+import com.yandex.mapkit.map.InputListener
+import com.yandex.mapkit.map.Map
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -39,9 +50,11 @@ import ru.netology.nework.adapter.UserAdapter
 import ru.netology.nework.converters.DateTimeConverter
 import ru.netology.nework.databinding.FragmentEditEventBinding
 import ru.netology.nework.dto.Attachment
+import ru.netology.nework.dto.Coordinates
 import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.User
 import ru.netology.nework.model.requestModel.EventRequest
+import ru.netology.nework.model.requestModel.PostRequest
 import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.player.VideoLifecycleObserver
 import ru.netology.nework.util.AndroidUtils
@@ -68,6 +81,8 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
     private val usersViewModel: UsersViewModel by activityViewModels()
 
     private lateinit var usersAdapter: UserAdapter
+
+    private lateinit var imageProvider: com.yandex.runtime.image.ImageProvider
 
     private val pickPhotoLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -129,6 +144,8 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
             setupSpeakers(event)
             setupEventTypeButton(event)
             setupDateTimeButton(event)
+            setupCoords(event)
+            setupMap(event)
             if (!editDataSet && event.id != 0) {
                 Log.d("App log", event.toString())
                 setupEditData(event)
@@ -156,6 +173,103 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
                 usersContainer.visibility = View.GONE
             }
         }
+    }
+
+    private fun setupCoords(event: EventRequest) {
+        event.coords?.let {
+            val point = coordsToPoint(it)
+            binding.coords.setText(pointToUiString(point))
+        }
+    }
+
+    private fun setupImageProvider() {
+        val pin = requireNotNull(
+            AppCompatResources.getDrawable(
+                requireContext(), R.drawable.pin_icon_red
+            )
+        )
+
+        imageProvider = com.yandex.runtime.image.ImageProvider.fromBitmap(pin.toBitmap())
+    }
+
+    private fun setupMap(event: EventRequest) {
+        setupImageProvider()
+        binding.coordsContainer.visibility = View.VISIBLE
+        binding.map.visibility = View.VISIBLE
+        MapKitFactory.initialize(requireContext())
+
+
+        event.coords?.let { showPointOnMap(coordsToPoint(it), imageProvider) }
+
+        setCoordsChangedListener(binding.coords)
+
+        val inputListener = object : InputListener {
+            override fun onMapTap(map: Map, point: Point) {
+                binding.coords.setText(pointToUiString(point))
+            }
+
+            override fun onMapLongTap(map: Map, point: Point) {
+
+            }
+        }
+        binding.map.map.addInputListener(inputListener)
+    }
+
+    private fun pointToUiString(point: Point): String {
+        val latString = point.latitude.toString().take(9)
+        val longString = point.longitude.toString().take(9)
+        return "$latString, $longString"
+    }
+
+    private fun coordsToPoint(coords: Coordinates): Point {
+        val lat = coords.lat.toDouble()
+        val long = coords.long.toDouble()
+        return Point(lat, long)
+    }
+
+    private fun showPointOnMap(
+        point: Point, imageProvider: com.yandex.runtime.image.ImageProvider
+    ) {
+        binding.map.map.mapObjects.clear()
+        binding.map.map.mapObjects.addPlacemark(point, imageProvider)
+
+        binding.map.map.move(
+            CameraPosition(
+                point, 17.0f, 0.0f, 0.0f
+            ), Animation(Animation.Type.SMOOTH, 2f), null
+        )
+    }
+
+    private fun removePointFromMap() {
+
+    }
+
+    private fun setCoordsChangedListener(dateEditText: EditText) {
+        dateEditText.addTextChangedListener(object : TextWatcher {
+
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                s?.let {
+                    binding.error.visibility = View.GONE
+                    if (it.length == 20) {
+                        if (checkCoords()) {
+                            val coordsList = s.split(", ")
+                            val coordinates = Coordinates(coordsList[0], coordsList[1])
+                            showPointOnMap(coordsToPoint(coordinates), imageProvider)
+                        }
+                    } else {
+                        removePointFromMap()
+                    }
+                }
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+
+            }
+        })
     }
 
     private fun checkData(event: EventRequest): Boolean {

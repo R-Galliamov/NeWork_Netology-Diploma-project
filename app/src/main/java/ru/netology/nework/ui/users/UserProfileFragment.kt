@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nework.R
@@ -66,9 +67,32 @@ class UserProfileFragment : Fragment() {
         val tabTitles = listOf(getString(R.string.posts), getString(R.string.events))
         val adapter = UserWallAdapter(requireActivity(), fragments)
         binding.userWallViewPager.adapter = adapter
+
+        val tabLayout = binding.tabMode
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                val position = tab?.position ?: 0
+                binding.addContent.setOnClickListener {
+                    when (position) {
+                        0 -> findNavController().navigate(R.id.action_userProfileFragment_to_editPostFragment)
+                        1 -> findNavController().navigate(R.id.action_userProfileFragment_to_editEventFragment)
+                    }
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+        })
+
         TabLayoutMediator(binding.tabMode, binding.userWallViewPager) { tab, position ->
             tab.text = tabTitles[position]
         }.attach()
+
+
         return binding.root
     }
 
@@ -129,8 +153,7 @@ class UserProfileFragment : Fragment() {
                     jobsPreviewAdapter.submitList(user.jobs)
                     jobsAdapter.submitList(user.jobs)
 
-
-                    if (usersViewModel.currentUser.value?.id == authViewModel.authenticatedUser.value?.id) {
+                    if (isProfileOwner) {
                         addJobButton.visibility = View.VISIBLE
                         addJobButton.setOnClickListener {
                             jobContainer.visibility = View.VISIBLE
@@ -144,7 +167,6 @@ class UserProfileFragment : Fragment() {
 
                         setDateChangedListener(from)
                         setDateChangedListener(to)
-
                         sendData.setOnClickListener {
                             if (companyName.text.isNullOrBlank() || position.text.isNullOrBlank() || from.text.isNullOrBlank()) {
                                 error.visibility = View.VISIBLE
@@ -175,10 +197,14 @@ class UserProfileFragment : Fragment() {
                             clearAddJobFields()
                             AndroidUtils.hideKeyboard(requireView())
                         }
+
+                        addContent.visibility = View.VISIBLE
+
                     } else {
                         addJobButton.visibility = View.GONE
                         signOutButton.visibility = View.GONE
                         addJobContainer.visibility = View.GONE
+                        addContent.visibility = View.GONE
                     }
 
                     backButton.setOnClickListener {
@@ -284,10 +310,6 @@ class UserProfileFragment : Fragment() {
     private fun sendJobData() {
         val job = getJobData()
         usersViewModel.saveJob(job)
-    }
-
-    override fun onPause() {
-        super.onPause()
     }
 
     override fun onDestroy() {

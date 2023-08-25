@@ -62,35 +62,43 @@ class EventsViewModel @Inject constructor(
     }
 
     fun setCurrentEvent(event: Event) {
-        _currentEvent.value = event
+        _currentEvent.value = event.copy(coords = event.coords?.let { getValidCoords(it) })
     }
 
     fun updateCurrentEvent(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val event = eventRepository.getEvent(id).let { dbEvent ->
-                dbEvent.copy(
-                    participatedByMe = dbEvent.participantsIds.contains(appAuth.authStateFlow.value.id),
-                    ownedByMe = appAuth.authStateFlow.value.id == dbEvent.authorId,
-                    coords = dbEvent.coords?.let { getValidCoords(it) },
-                )
-            }
-            withContext(Dispatchers.Main) {
-                setCurrentEvent(event)
+            try {
+                val event = eventRepository.getEvent(id).let { dbEvent ->
+                    dbEvent.copy(
+                        participatedByMe = dbEvent.participantsIds.contains(appAuth.authStateFlow.value.id),
+                        ownedByMe = appAuth.authStateFlow.value.id == dbEvent.authorId,
+                        coords = dbEvent.coords?.let { getValidCoords(it) },
+                    )
+                }
+                withContext(Dispatchers.Main) {
+                    setCurrentEvent(event)
+                }
+            } catch (e: Exception) {
+                LoadingStateModel(errorState = true)
             }
         }
     }
 
     fun updateUserEvents(userId: Int) {
         viewModelScope.launch(Dispatchers.Default) {
-            val userEvents = eventRepository.getUserEvents(userId).map { event ->
-                event.copy(
-                    participatedByMe = event.participantsIds.contains(appAuth.authStateFlow.value.id),
-                    ownedByMe = appAuth.authStateFlow.value.id == event.authorId,
-                    coords = event.coords?.let { getValidCoords(it) },
-                )
-            }
-            withContext(Dispatchers.Main) {
-                _userEvents.value = userEvents
+            try {
+                val userEvents = eventRepository.getUserEvents(userId).map { event ->
+                    event.copy(
+                        participatedByMe = event.participantsIds.contains(appAuth.authStateFlow.value.id),
+                        ownedByMe = appAuth.authStateFlow.value.id == event.authorId,
+                        coords = event.coords?.let { getValidCoords(it) },
+                    )
+                }
+                withContext(Dispatchers.Main) {
+                    _userEvents.value = userEvents
+                }
+            } catch (e: Exception) {
+                LoadingStateModel(errorState = true)
             }
         }
     }
@@ -140,7 +148,9 @@ class EventsViewModel @Inject constructor(
                 eventRepository.deleteEvent(event.id)
 
                 withContext(Dispatchers.Main) {
-                    updateUserEvents(event)
+                    val currentEvents = userEvents.value?.toMutableList()
+                    currentEvents?.removeIf { it.id == event.id }
+                    _userEvents.value = currentEvents!!
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -170,7 +180,7 @@ class EventsViewModel @Inject constructor(
     private fun updateUserEvents(event: Event) {
         val currentEvents = userEvents.value?.toMutableList()
         currentEvents?.indexOfFirst { it.id == event.id }?.takeIf { it != -1 }?.let { index ->
-            currentEvents[index] = event
+            currentEvents[index] = event.copy(coords = event.coords?.let { getValidCoords(it) })
             _userEvents.value = currentEvents!!
         }
     }

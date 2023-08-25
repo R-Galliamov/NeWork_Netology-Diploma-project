@@ -80,7 +80,7 @@ class EventAdapter(
 
         private fun setupParticipateButton(event: Event) {
             val text =
-                if (!event.participatedByMe) itemView.context.getText(R.string.participate) else itemView.context.getText(
+                if (!event.participatedByMe) itemView.context.getString(R.string.join) else itemView.context.getText(
                     R.string.leave
                 )
             with(binding) {

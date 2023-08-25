@@ -2,11 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!--
     <item
         android:id="@+id/notification_badge"
         android:icon="@drawable/notification_icon"
         android:title="Badge"
         app:showAsAction="always" />
+        -->
 
     <item
         android:id="@+id/create_content"

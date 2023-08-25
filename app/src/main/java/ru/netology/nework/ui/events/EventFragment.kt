@@ -14,11 +14,17 @@ import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.exoplayer2.ui.PlayerView
+import com.yandex.mapkit.Animation
+import com.yandex.mapkit.MapKitFactory
+import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.CameraPosition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -185,10 +191,41 @@ class EventFragment : Fragment() {
             setupEventMenu(event)
             setupParticipateButton(event)
             setupOnline(event)
+            setupMap(event)
 
             binding.backButton.setOnClickListener {
                 findNavController().navigateUp()
             }
+        }
+    }
+
+    private fun setupMap(event: Event) {
+        if (event.coords != null) {
+            binding.coordsContainer.visibility = View.VISIBLE
+            binding.map.visibility = View.VISIBLE
+            MapKitFactory.initialize(requireContext())
+            val lat = event.coords.lat.toDouble()
+            val long = event.coords.long.toDouble()
+            val location = Point(lat, long)
+
+            val pin = requireNotNull(
+                AppCompatResources.getDrawable(
+                    requireContext(), R.drawable.pin_icon_red
+                )
+            )
+
+            val imageProvider = com.yandex.runtime.image.ImageProvider.fromBitmap(pin.toBitmap())
+
+            binding.map.map.mapObjects.addPlacemark(location, imageProvider)
+
+            binding.map.map.move(
+                CameraPosition(
+                    location, 17.0f, 0.0f, 0.0f
+                ), Animation(Animation.Type.SMOOTH, 0f), null
+            )
+        } else {
+            binding.map.visibility = View.INVISIBLE
+            binding.coordsContainer.visibility = View.INVISIBLE
         }
     }
 
@@ -216,7 +253,7 @@ class EventFragment : Fragment() {
     }
 
     private fun setupParticipateButton(event: Event) {
-        val text = if (!event.participatedByMe) requireContext().getText(R.string.participate)
+        val text = if (!event.participatedByMe) requireContext().getString(R.string.join)
         else requireContext().getText(R.string.leave)
         with(binding) {
             participateButton.text = text
@@ -321,7 +358,10 @@ class EventFragment : Fragment() {
     private fun setupOnline(event: Event) {
         when (event.type) {
             Event.Type.OFFLINE -> binding.online.visibility = View.GONE
-            Event.Type.ONLINE -> binding.online.visibility = View.VISIBLE
+            Event.Type.ONLINE -> {
+                binding.online.visibility = View.VISIBLE
+                binding.online.text = requireContext().getText(R.string.online)
+            }
         }
     }
 

@@ -58,7 +58,7 @@ class FeedViewModel @Inject constructor(
     }
 
     fun setCurrentPost(post: Post) {
-        _currentPost.value = post
+        _currentPost.value = post.copy(coords = post.coords?.let { getValidCoords(it) })
     }
 
     fun updateUserPosts(userId: Int) {
@@ -137,7 +137,9 @@ class FeedViewModel @Inject constructor(
                 postRepository.deletePost(post.id)
 
                 withContext(Dispatchers.Main) {
-                    updateUserPosts(post)
+                    val currentPosts = userPosts.value?.toMutableList()
+                    currentPosts?.removeIf { it.id == post.id }
+                    _userPosts.value = currentPosts!!
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -148,7 +150,7 @@ class FeedViewModel @Inject constructor(
     private fun updateUserPosts(post: Post) {
         val currentPosts = userPosts.value?.toMutableList()
         currentPosts?.indexOfFirst { it.id == post.id }?.takeIf { it != -1 }?.let { index ->
-            currentPosts[index] = post
+            currentPosts[index] = post.copy(coords = post.coords?.let { getValidCoords(it) })
             currentPosts.let {
                 _userPosts.value = it
             }

@@ -14,6 +14,8 @@ import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -208,8 +210,13 @@ class PostFragment : Fragment() {
             val long = post.coords.long.toDouble()
             val location = Point(lat, long)
 
-            val imageProvider =
-                ImageProvider.fromResource(context, R.drawable.pin_icon_red)
+            val pin = requireNotNull(
+                AppCompatResources.getDrawable(
+                    requireContext(), R.drawable.pin_icon_red
+                )
+            )
+
+            val imageProvider = com.yandex.runtime.image.ImageProvider.fromBitmap(pin.toBitmap())
 
             binding.map.map.mapObjects.addPlacemark(location, imageProvider)
 
@@ -223,8 +230,6 @@ class PostFragment : Fragment() {
             binding.coordsContainer.visibility = View.INVISIBLE
         }
     }
-
-
 
     private fun setupMentions(post: Post) {
         with(binding) {
