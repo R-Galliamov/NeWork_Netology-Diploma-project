@@ -224,8 +224,8 @@ class EventFragment : Fragment() {
                 ), Animation(Animation.Type.SMOOTH, 0f), null
             )
         } else {
-            binding.map.visibility = View.INVISIBLE
-            binding.coordsContainer.visibility = View.INVISIBLE
+            binding.map.visibility = View.GONE
+            binding.coordsContainer.visibility = View.GONE
         }
     }
 

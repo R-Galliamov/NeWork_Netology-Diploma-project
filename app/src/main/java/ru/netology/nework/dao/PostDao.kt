@@ -24,7 +24,7 @@ interface PostDao {
     @Query("SELECT COUNT(*) FROM PostEntity")
     fun getRowCount(): Int
 
-    @Query("SELECT * FROM PostEntity WHERE authorId = :userId")
+    @Query("SELECT * FROM PostEntity WHERE authorId = :userId ORDER BY id DESC")
     fun getUserPosts(userId: Int): List<PostEntity>
 
     @Query("SELECT * FROM PostEntity WHERE id = :id")

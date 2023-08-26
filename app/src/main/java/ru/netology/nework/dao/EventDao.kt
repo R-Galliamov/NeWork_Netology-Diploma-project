@@ -23,7 +23,7 @@ interface EventDao {
     @Query("DELETE FROM EventEntity WHERE id = :id")
     suspend fun deleteEvent(id: Int)
 
-    @Query("SELECT * FROM EventEntity WHERE authorId = :userId")
+    @Query("SELECT * FROM EventEntity WHERE authorId = :userId ORDER BY id DESC")
     fun getUserEvents(userId: Int): List<EventEntity>
 
     @Query("SELECT * FROM EventEntity WHERE id = :id")
