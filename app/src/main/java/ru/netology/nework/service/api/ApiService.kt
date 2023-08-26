@@ -111,12 +111,12 @@ interface ApiService {
         @Field("password") password: String
     ): Response<AuthState>
 
-    @FormUrlEncoded
+    @Multipart
     @POST("api/users/registration/")
     suspend fun registerUser(
-        @Field("login") login: RequestBody,
-        @Field("password") password: RequestBody,
-        @Field("name") name: RequestBody,
+        @Part("login") login: RequestBody,
+        @Part("password") password: RequestBody,
+        @Part("name") name: RequestBody,
     ): Response<AuthState>
 
     @Multipart

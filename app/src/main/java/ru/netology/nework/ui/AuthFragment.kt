@@ -2,11 +2,14 @@ package ru.netology.nework.ui
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toFile
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -18,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentAuthBinding
+import ru.netology.nework.error.ErrorHandler
 import ru.netology.nework.model.requestModel.AuthenticationRequest
 import ru.netology.nework.model.requestModel.RegistrationRequest
 import ru.netology.nework.util.AndroidUtils
@@ -122,22 +126,34 @@ class AuthFragment : Fragment() {
                 binding.avatar.loadCircleCropAvatar(it.uri.toString())
             }
 
-            authViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-                if (isLoading == true)
-                    binding.apply {
-                        authDataContainer.visibility = View.GONE
-                        cancelButton.visibility = View.GONE
-                        progressBar.visibility = View.VISIBLE
-                    }
+            authViewModel.loadState.observe(viewLifecycleOwner) { state ->
+                binding.apply {
+                    authDataContainer.isVisible = !state.loading
+                    cancelButton.isVisible = !state.loading
+                    progressBar.isVisible = state.loading
+                }
+
+                if (state.errorState) {
+                    Log.d("App log", state.errorObject.status.toString())
+                    val errorDescription = ErrorHandler.getApiErrorDescriptor(state.errorObject)
+                    Toast.makeText(
+                        requireContext(), errorDescription, Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
 
             authViewModel.authData.observe(viewLifecycleOwner) { authState ->
-                if (authState.id != 0 && authState.token != null && authViewModel.isLoading.value == false) {
-                    binding.progressBar.visibility = View.GONE
-                    binding.doneIcon.visibility = View.VISIBLE
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        delay(500)
-                        findNavController().navigateUp()
+                val isLoading = authViewModel.loadState.value!!.loading
+                if (authState.id != 0 && authState.token != null && !isLoading) {
+                    binding.apply {
+                        authDataContainer.isVisible = false
+                        cancelButton.isVisible = false
+                        progressBar.isVisible = false
+                        binding.doneIcon.visibility = View.VISIBLE
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            delay(500)
+                            findNavController().navigateUp()
+                        }
                     }
                 }
             }

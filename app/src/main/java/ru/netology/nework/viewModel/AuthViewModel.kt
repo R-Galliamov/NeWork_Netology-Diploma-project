@@ -14,10 +14,12 @@ import ru.netology.nework.auth.AppAuth
 import ru.netology.nework.dto.AuthState
 import ru.netology.nework.dto.User
 import ru.netology.nework.error.ApiError
+import ru.netology.nework.model.LoadingStateModel
 import ru.netology.nework.repository.UserRepository
 import ru.netology.nework.model.requestModel.AuthenticationRequest
 import ru.netology.nework.model.PhotoModel
 import ru.netology.nework.model.requestModel.RegistrationRequest
+import ru.netology.nework.util.SingleLiveEvent
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,10 +37,9 @@ class AuthViewModel @Inject constructor(
     val authenticatedUser: LiveData<User?>
         get() = _authenticatedUser
 
-    private val _isLoading: MutableLiveData<Boolean> = MutableLiveData(false)
-    val isLoading: LiveData<Boolean>
-        get() = _isLoading
-
+    private val _loadState: MutableLiveData<LoadingStateModel> = MutableLiveData(LoadingStateModel())
+    val loadState: LiveData<LoadingStateModel>
+        get() = _loadState
     val authProcess: MutableLiveData<AuthProcess>
         get() = _authProcess
 
@@ -62,26 +63,30 @@ class AuthViewModel @Inject constructor(
     fun signUpUser(regRequest: RegistrationRequest) {
         viewModelScope.launch {
             try {
-                _isLoading.value = true
+                _loadState.value = LoadingStateModel(loading = true)
                 val authState = repository.signUpUser(regRequest)
                 appAuth.setAuth(authState)
-                _isLoading.value = false
+                _loadState.value = LoadingStateModel(loading = false)
                 setAuthenticatedUser(authState.id)
                 Log.d("App log", appAuth.authStateFlow.value.toString())
             } catch (e: ApiError) {
-                _isLoading.value = false
+                _loadState.value = LoadingStateModel(errorState = true, errorObject = e)
             }
         }
     }
 
     fun signInUser(authRequest: AuthenticationRequest) {
         viewModelScope.launch {
-            _isLoading.value = true
-            val authState = repository.signInUser(authRequest)
-            appAuth.setAuth(authState)
-            _isLoading.value = false
-            setAuthenticatedUser(authState.id)
-            Log.d("App log", appAuth.authStateFlow.value.toString())
+            try{
+                _loadState.value = LoadingStateModel(loading = true)
+                val authState = repository.signInUser(authRequest)
+                appAuth.setAuth(authState)
+                _loadState.value = LoadingStateModel(loading = false)
+                setAuthenticatedUser(authState.id)
+                Log.d("App log", appAuth.authStateFlow.value.toString())
+            } catch (e: ApiError) {
+                _loadState.value = LoadingStateModel(errorState = true, errorObject = e)
+            }
         }
     }
 
