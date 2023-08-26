@@ -60,6 +60,8 @@ class AuthFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.doneIcon.visibility = View.GONE
+
         authViewModel.authProcess.observe(viewLifecycleOwner) { state ->
             if (state == AuthViewModel.AuthProcess.AUTHENTICATION) {
                 binding.apply {
