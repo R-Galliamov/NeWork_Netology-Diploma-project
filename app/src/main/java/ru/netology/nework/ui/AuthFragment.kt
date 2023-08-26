@@ -39,9 +39,7 @@ class AuthFragment : Fragment() {
             when (it.resultCode) {
                 ImagePicker.RESULT_ERROR -> {
                     Snackbar.make(
-                        binding.root,
-                        ImagePicker.getError(it.data),
-                        Snackbar.LENGTH_LONG
+                        binding.root, ImagePicker.getError(it.data), Snackbar.LENGTH_LONG
                     ).show()
                 }
 
@@ -50,9 +48,7 @@ class AuthFragment : Fragment() {
         }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentAuthBinding.inflate(inflater, container, false)
         return binding.root
@@ -82,11 +78,7 @@ class AuthFragment : Fragment() {
             }
             binding.sendDataButton.setOnClickListener {
                 AndroidUtils.hideKeyboard(requireView())
-                if (binding.login.text.isNotBlank()
-                    || binding.password.text.isNotBlank()
-                    || (authViewModel.authProcess.value == AuthViewModel.AuthProcess.REGISTRATION
-                            && binding.userName.text.isNotBlank())
-                ) {
+                if (binding.login.text.isNotBlank() || binding.password.text.isNotBlank() || (authViewModel.authProcess.value == AuthViewModel.AuthProcess.REGISTRATION && binding.userName.text.isNotBlank())) {
                     binding.error.visibility = View.GONE
                     val login = binding.login.text.toString()
                     val password = binding.password.text.toString()
@@ -97,10 +89,7 @@ class AuthFragment : Fragment() {
                         val avatarUri = authViewModel.photo.value?.uri
                         authViewModel.signUpUser(
                             RegistrationRequest(
-                                login,
-                                password,
-                                name,
-                                avatarUri?.toFile()
+                                login, password, name, avatarUri?.toFile()
                             )
                         )
                     }
@@ -111,17 +100,13 @@ class AuthFragment : Fragment() {
             }
 
             binding.avatar.setOnClickListener {
-                ImagePicker.with(this)
-                    .crop()
-                    .compress(2048)
-                    .provider(ImageProvider.GALLERY)
+                ImagePicker.with(this).crop().compress(2048).provider(ImageProvider.GALLERY)
                     .galleryMimeTypes(
                         arrayOf(
                             "image/png",
                             "image/jpeg",
                         )
-                    )
-                    .createIntent(pickPhotoLauncher::launch)
+                    ).createIntent(pickPhotoLauncher::launch)
             }
 
             authViewModel.photo.observe(viewLifecycleOwner) {
@@ -146,7 +131,8 @@ class AuthFragment : Fragment() {
 
             authViewModel.authData.observe(viewLifecycleOwner) { authState ->
                 val isLoading = authViewModel.loadState.value!!.loading
-                if (authState.id != 0 && authState.token != null && !isLoading) {
+                val authenticated = authViewModel.authenticated
+                if (authenticated && !isLoading) {
                     binding.apply {
                         authDataContainer.isVisible = false
                         cancelButton.isVisible = false
