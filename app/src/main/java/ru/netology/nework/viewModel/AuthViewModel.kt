@@ -93,7 +93,6 @@ class AuthViewModel @Inject constructor(
     fun signOutUser() {
         appAuth.removeAuth()
         _authenticatedUser.value = null
-        Log.d("App log", appAuth.authStateFlow.value.toString())
     }
 
     private fun setAuthenticatedUser(userId: Int) {
