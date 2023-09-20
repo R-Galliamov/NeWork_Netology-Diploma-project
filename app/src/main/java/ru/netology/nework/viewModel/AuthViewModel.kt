@@ -13,13 +13,12 @@ import kotlinx.coroutines.launch
 import ru.netology.nework.auth.AppAuth
 import ru.netology.nework.dto.AuthState
 import ru.netology.nework.dto.User
-import ru.netology.nework.error.ApiError
+import ru.netology.nework.error.AppError
 import ru.netology.nework.model.LoadingStateModel
-import ru.netology.nework.repository.UserRepository
-import ru.netology.nework.model.requestModel.AuthenticationRequest
 import ru.netology.nework.model.PhotoModel
+import ru.netology.nework.model.requestModel.AuthenticationRequest
 import ru.netology.nework.model.requestModel.RegistrationRequest
-import ru.netology.nework.util.SingleLiveEvent
+import ru.netology.nework.repository.UserRepository
 import javax.inject.Inject
 
 @HiltViewModel
@@ -69,8 +68,8 @@ class AuthViewModel @Inject constructor(
                 _loadState.value = LoadingStateModel(loading = false)
                 setAuthenticatedUser(authState.id)
                 Log.d("App log", appAuth.authStateFlow.value.toString())
-            } catch (e: ApiError) {
-                _loadState.value = LoadingStateModel(errorState = true, errorObject = e)
+            } catch (e: AppError) {
+                _loadState.value = LoadingStateModel(errorState = true, errorStatus = e.status)
             }
         }
     }
@@ -84,8 +83,8 @@ class AuthViewModel @Inject constructor(
                 _loadState.value = LoadingStateModel(loading = false)
                 setAuthenticatedUser(authState.id)
                 Log.d("App log", appAuth.authStateFlow.value.toString())
-            } catch (e: ApiError) {
-                _loadState.value = LoadingStateModel(errorState = true, errorObject = e)
+            } catch (e: AppError) {
+                _loadState.value = LoadingStateModel(errorState = true, errorStatus = e.status)
             }
         }
     }

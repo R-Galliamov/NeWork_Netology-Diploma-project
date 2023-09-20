@@ -3,6 +3,7 @@ package ru.netology.nework.ui.posts
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -29,6 +30,7 @@ import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
 import ru.netology.nework.error.ErrorHandler
+import ru.netology.nework.error.ErrorStatus
 import ru.netology.nework.listeners.OnPostInteractionListener
 import ru.netology.nework.player.AudioLifecycleObserver
 import ru.netology.nework.player.VideoLifecycleObserver
@@ -49,6 +51,9 @@ class FeedFragment : Fragment() {
     private val usersViewModel: UsersViewModel by activityViewModels()
     private val editPostViewModel: EditPostViewModel by activityViewModels()
     private val navStateViewModel: NavStateViewModel by activityViewModels()
+
+    @Inject
+    lateinit var errorHandler: ErrorHandler
 
     @Inject
     lateinit var audioObserver: AudioLifecycleObserver
@@ -188,7 +193,7 @@ class FeedFragment : Fragment() {
             binding.progressContainer.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
             if (state.errorState) {
-                val errorDescription = ErrorHandler.getApiErrorDescriptor(state.errorObject)
+                val errorDescription = errorHandler.getErrorDescriptor(state.errorStatus)
                 Toast.makeText(
                     requireContext(), errorDescription, Toast.LENGTH_SHORT
                 ).show()

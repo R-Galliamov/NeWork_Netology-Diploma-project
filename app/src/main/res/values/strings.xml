@@ -57,5 +57,12 @@
     <string name="send_event">Send event</string>
     <string name="invalid_coordinates_format">Invalid coordinates format</string>
     <string name="join">Join</string>
+    <string name="error_desc_400">Oops! Something\'s not quite right with your request.</string>
+    <string name="error_desc_401">Hold on! You need proper authorization for this.</string>
+    <string name="error_desc_403">Sorry, but you\'re not allowed to access this.</string>
+    <string name="error_desc_404">Uh-oh! The thing you\'re looking for? Nowhere to be found.</string>
+    <string name="error_desc_500">Whoops! Our server seems to be having a bad day. Try again later.</string>
+    <string name="error_desk_unknown">Hmm, something unexpected happened. Try again later</string>
+    <string name="check_connection">Check your internet connection</string>
 
 </resources>

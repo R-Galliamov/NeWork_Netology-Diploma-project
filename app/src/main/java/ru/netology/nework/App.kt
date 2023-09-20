@@ -11,3 +11,4 @@ class App : Application() {
         MapKitFactory.setApiKey(API_MAPS_KEY)
     }
 }
+

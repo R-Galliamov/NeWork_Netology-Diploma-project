@@ -45,6 +45,9 @@ class UserPostsFragment : Fragment() {
     private val usersViewModel: UsersViewModel by activityViewModels()
 
     @Inject
+    lateinit var errorHandler: ErrorHandler
+
+    @Inject
     lateinit var audioObserver: AudioLifecycleObserver
 
     @Inject
@@ -172,7 +175,7 @@ class UserPostsFragment : Fragment() {
 
         feedViewModel.dataState.observe(viewLifecycleOwner) { state ->
             if (state.errorState) {
-                val errorDescription = ErrorHandler.getApiErrorDescriptor(state.errorObject)
+                val errorDescription = errorHandler.getErrorDescriptor(state.errorStatus)
                 Toast.makeText(
                     requireContext(),
                     errorDescription,

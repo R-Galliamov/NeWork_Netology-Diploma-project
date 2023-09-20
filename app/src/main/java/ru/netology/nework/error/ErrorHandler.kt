@@ -1,19 +1,25 @@
 package ru.netology.nework.error
 
-import android.util.Log
+import android.content.Context
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import ru.netology.nework.R
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ErrorHandler {
-    companion object {
-        fun getApiErrorDescriptor(e: ApiError): String {
-            return when (e.status) {
-                400 -> "Oops! Something's not quite right with your request."
-                401 -> "Hold on! You need proper authorization for this."
-                403 -> "Sorry, but you're not allowed to access this."
-                404 -> "Uh-oh! The thing you're looking for? Nowhere to be found."
-                500 -> "Whoops! Our server seems to be having a bad day. Try again later."
-                else -> "Hmm, something unexpected happened. Try again later"
-            }
-
+@Singleton
+class ErrorHandler @Inject constructor(val context: Context) {
+    fun getErrorDescriptor(status: Int): String {
+        return when (status) {
+            400 -> context.getString(R.string.error_desc_400)
+            401 -> context.getString(R.string.error_desc_401)
+            403 -> context.getString(R.string.error_desc_403)
+            404 -> context.getString(R.string.error_desc_404)
+            500 -> context.getString(R.string.error_desc_500)
+            ErrorStatus.NETWORK_ERROR -> context.getString(R.string.check_connection)
+            else -> context.getString(R.string.error_desk_unknown)
         }
     }
 }

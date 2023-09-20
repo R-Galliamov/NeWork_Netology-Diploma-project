@@ -72,6 +72,9 @@ import javax.inject.Inject
 class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
     TimePickerDialog.OnTimeSetListener {
 
+    @Inject
+    lateinit var androidUtils: AndroidUtils
+
     private var _binding: FragmentEditEventBinding? = null
     private val binding: FragmentEditEventBinding
         get() = _binding!!
@@ -152,7 +155,7 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
                 editDataSet = true
             }
             binding.sendData.setOnClickListener {
-                AndroidUtils.hideKeyboard(requireView())
+                androidUtils.hideKeyboard(requireView())
                 if (checkData(event)) {
                     sendData()
                 }
@@ -517,7 +520,7 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
 
             val addClickableSpan = object : ClickableSpan() {
                 override fun onClick(view: View) {
-                    AndroidUtils.hideKeyboard(requireView())
+                    androidUtils.hideKeyboard(requireView())
                     binding.usersContainer.visibility = View.VISIBLE
                 }
 

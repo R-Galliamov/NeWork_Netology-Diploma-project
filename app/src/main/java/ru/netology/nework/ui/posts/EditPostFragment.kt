@@ -66,6 +66,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class EditPostFragment : Fragment() {
 
+    @Inject
+    lateinit var androidUtils: AndroidUtils
+
     private var _binding: FragmentEditPostBinding? = null
     private val binding: FragmentEditPostBinding
         get() = _binding!!
@@ -155,7 +158,7 @@ class EditPostFragment : Fragment() {
                 findNavController().navigateUp()
             }
             sendData.setOnClickListener {
-                AndroidUtils.hideKeyboard(requireView())
+                androidUtils.hideKeyboard(requireView())
                 if (checkContent()) {
                     if (checkCoords()) {
                         sendData()
@@ -495,7 +498,7 @@ class EditPostFragment : Fragment() {
 
             val addClickableSpan = object : ClickableSpan() {
                 override fun onClick(view: View) {
-                    AndroidUtils.hideKeyboard(requireView())
+                    androidUtils.hideKeyboard(requireView())
                     binding.usersContainer.visibility = View.VISIBLE
                 }
 

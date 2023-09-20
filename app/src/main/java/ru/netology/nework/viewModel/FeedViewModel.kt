@@ -13,10 +13,9 @@ import kotlinx.coroutines.withContext
 import ru.netology.nework.auth.AppAuth
 import ru.netology.nework.dto.Coordinates
 import ru.netology.nework.dto.Post
-import ru.netology.nework.error.ApiError
+import ru.netology.nework.error.AppError
 import ru.netology.nework.model.LoadingStateModel
 import ru.netology.nework.repository.PostRepository
-import java.lang.Exception
 import java.text.DecimalFormat
 import javax.inject.Inject
 
@@ -102,8 +101,8 @@ class FeedViewModel @Inject constructor(
             newState = try {
                 postRepository.getAll()
                 LoadingStateModel()
-            } catch (e: ApiError) {
-                LoadingStateModel(errorState = true, errorObject = e)
+            } catch (e: AppError) {
+                LoadingStateModel(errorState = true, errorStatus = e.status)
             } catch (e: Exception) {
                 LoadingStateModel(errorState = true)
             }
@@ -121,9 +120,9 @@ class FeedViewModel @Inject constructor(
                     setCurrentPost(post)
                     updateUserPosts(post)
                 }
-            } catch (e: ApiError) {
+            } catch (e: AppError) {
                 withContext(Dispatchers.Main) {
-                    _dataState.value = LoadingStateModel(errorState = true, errorObject = e)
+                    _dataState.value = LoadingStateModel(errorState = true, errorStatus = e.status)
                 }
             } catch (e: Exception) {
                 LoadingStateModel(errorState = true)

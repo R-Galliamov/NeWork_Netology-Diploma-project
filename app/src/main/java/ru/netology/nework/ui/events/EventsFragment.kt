@@ -51,6 +51,9 @@ class EventsFragment : Fragment() {
     private val navStateViewModel: NavStateViewModel by activityViewModels()
 
     @Inject
+    lateinit var errorHandler: ErrorHandler
+
+    @Inject
     lateinit var audioObserver: AudioLifecycleObserver
 
     @Inject
@@ -195,7 +198,7 @@ class EventsFragment : Fragment() {
             binding.progressContainer.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
             if (state.errorState) {
-                val errorDescription = ErrorHandler.getApiErrorDescriptor(state.errorObject)
+                val errorDescription = errorHandler.getErrorDescriptor(state.errorStatus)
                 Toast.makeText(
                     requireContext(),
                     errorDescription,

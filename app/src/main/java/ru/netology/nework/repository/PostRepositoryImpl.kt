@@ -1,6 +1,7 @@
 package ru.netology.nework.repository
 
 import android.content.ContentResolver
+import android.util.Log
 import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +22,7 @@ import ru.netology.nework.error.NetworkError
 import ru.netology.nework.error.UnknownError
 import ru.netology.nework.model.requestModel.PostRequest
 import ru.netology.nework.service.api.ApiService
+import ru.netology.nework.util.AndroidUtils
 import java.io.IOException
 import java.text.DecimalFormat
 import javax.inject.Inject
@@ -41,8 +43,6 @@ class PostRepositoryImpl @Inject constructor(
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.upsertPost(body.toEntity())
-        } catch (e: Exception) {
-            throw e
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: ApiError) {

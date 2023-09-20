@@ -40,6 +40,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class UserProfileFragment : Fragment() {
 
+    @Inject
+    lateinit var androidUtils: AndroidUtils
+
     private var _binding: FragmentUserProfileBinding? = null
     private val binding: FragmentUserProfileBinding
         get() = _binding!!
@@ -195,7 +198,7 @@ class UserProfileFragment : Fragment() {
                             }
                             sendJobData()
                             clearAddJobFields()
-                            AndroidUtils.hideKeyboard(requireView())
+                            androidUtils.hideKeyboard(requireView())
                         }
 
                         addContent.visibility = View.VISIBLE
@@ -213,7 +216,7 @@ class UserProfileFragment : Fragment() {
 
                     overlay.setOnClickListener {
                         binding.jobContainer.visibility = View.GONE
-                        AndroidUtils.hideKeyboard(requireView())
+                        androidUtils.hideKeyboard(requireView())
                     }
                 }
             }

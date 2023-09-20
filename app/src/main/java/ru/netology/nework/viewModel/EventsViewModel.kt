@@ -13,12 +13,10 @@ import kotlinx.coroutines.withContext
 import ru.netology.nework.auth.AppAuth
 import ru.netology.nework.dto.Coordinates
 import ru.netology.nework.dto.Event
-import ru.netology.nework.error.ApiError
+import ru.netology.nework.error.AppError
 import ru.netology.nework.model.LoadingStateModel
 import ru.netology.nework.repository.EventRepository
-import java.lang.Exception
 import java.text.DecimalFormat
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -134,9 +132,9 @@ class EventsViewModel @Inject constructor(
                     setCurrentEvent(event)
                     updateUserEvents(event)
                 }
-            } catch (e: ApiError) {
+            } catch (e: AppError) {
                 withContext(Dispatchers.Main) {
-                    _dataState.value = LoadingStateModel(errorState = true, errorObject = e)
+                    _dataState.value = LoadingStateModel(errorState = true, errorStatus = e.status)
                 }
             }
         }

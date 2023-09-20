@@ -17,6 +17,7 @@ import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.github.dhaval2404.imagepicker.constant.ImageProvider
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.netology.nework.R
@@ -27,8 +28,15 @@ import ru.netology.nework.model.requestModel.RegistrationRequest
 import ru.netology.nework.util.AndroidUtils
 import ru.netology.nework.view.loadCircleCropAvatar
 import ru.netology.nework.viewModel.AuthViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class AuthFragment : Fragment() {
+
+    @Inject
+    lateinit var androidUtils: AndroidUtils
+    @Inject
+    lateinit var errorHandler: ErrorHandler
 
     private var _binding: FragmentAuthBinding? = null
     private val binding: FragmentAuthBinding
@@ -77,7 +85,7 @@ class AuthFragment : Fragment() {
                 }
             }
             binding.sendDataButton.setOnClickListener {
-                AndroidUtils.hideKeyboard(requireView())
+                androidUtils.hideKeyboard(requireView())
                 if (binding.login.text.isNotBlank() || binding.password.text.isNotBlank() || (authViewModel.authProcess.value == AuthViewModel.AuthProcess.REGISTRATION && binding.userName.text.isNotBlank())) {
                     binding.error.visibility = View.GONE
                     val login = binding.login.text.toString()
@@ -121,8 +129,7 @@ class AuthFragment : Fragment() {
                 }
 
                 if (state.errorState) {
-                    Log.d("App log", state.errorObject.status.toString())
-                    val errorDescription = ErrorHandler.getApiErrorDescriptor(state.errorObject)
+                    val errorDescription = errorHandler.getErrorDescriptor(state.errorStatus)
                     Toast.makeText(
                         requireContext(), errorDescription, Toast.LENGTH_SHORT
                     ).show()
