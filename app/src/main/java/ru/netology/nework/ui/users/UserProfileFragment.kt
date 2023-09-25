@@ -318,6 +318,10 @@ class UserProfileFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         resetUser()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
         _binding = null
     }
 

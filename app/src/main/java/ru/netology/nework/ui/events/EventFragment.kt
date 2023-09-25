@@ -365,7 +365,6 @@ class EventFragment : Fragment() {
         }
     }
 
-
     private fun setupOnUser(event: Event) {
         with(binding) {
             authorAvatar.setOnClickListener {
@@ -455,8 +454,8 @@ class EventFragment : Fragment() {
         binding.playButton.setImageResource(imageId)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         _binding = null
     }
 }

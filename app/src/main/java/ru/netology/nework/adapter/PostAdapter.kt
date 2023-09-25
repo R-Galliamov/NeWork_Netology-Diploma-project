@@ -180,10 +180,10 @@ class PostAdapter(
             with(binding) {
                 like.setImageResource(likeRes)
                 like.setOnClickListener {
-                    onInteractionListener.onLike(getItem(adapterPosition))
+                    onInteractionListener.onLike(getItem(bindingAdapterPosition))
                 }
                 like.setOnLongClickListener {
-                    onInteractionListener.onLikeLongClick(getItem(adapterPosition).likeOwnerIds)
+                    onInteractionListener.onLikeLongClick(getItem(bindingAdapterPosition).likeOwnerIds)
                     true
                 }
                 likeCount.text = post.likeOwnerIds.size.toString()

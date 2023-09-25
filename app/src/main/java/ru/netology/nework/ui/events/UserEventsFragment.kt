@@ -15,7 +15,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import ru.netology.nework.R
@@ -54,7 +53,7 @@ class UserEventsFragment : Fragment() {
     @Inject
     lateinit var videoObserver: VideoLifecycleObserver
 
-    private var adapter: EventAdapter? = null
+    private var eventAdapter: EventAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -85,7 +84,7 @@ class UserEventsFragment : Fragment() {
             binding.usersContainer.visibility = View.GONE
         }
 
-        adapter = EventAdapter(object : OnEventInteractionListener {
+        eventAdapter = EventAdapter(object : OnEventInteractionListener {
             override fun onLike(event: Event) {
                 eventsViewModel.onLike(event)
             }
@@ -145,7 +144,7 @@ class UserEventsFragment : Fragment() {
             override fun onAudio(audio: Attachment, eventId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
                     audioObserver.mediaPlayerDelegate(audio, eventId) {
-                        adapter?.notifyDataSetChanged()
+                        eventAdapter?.notifyDataSetChanged()
                     }
                 } else {
                     Toast.makeText(
@@ -166,7 +165,7 @@ class UserEventsFragment : Fragment() {
         }, audioObserver, videoObserver)
 
         val recyclerView = binding.recyclerView
-        recyclerView.adapter = adapter
+        recyclerView.adapter = eventAdapter
 
         usersViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
@@ -175,7 +174,7 @@ class UserEventsFragment : Fragment() {
         }
 
         eventsViewModel.userEvents.observe(viewLifecycleOwner) { events ->
-            adapter?.submitList(events)
+            eventAdapter?.submitList(events)
         }
 
         eventsViewModel.dataState.observe(viewLifecycleOwner) { state ->
@@ -215,6 +214,7 @@ class UserEventsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         eventsViewModel.resetState()
+        eventAdapter = null
         _binding = null
     }
 }

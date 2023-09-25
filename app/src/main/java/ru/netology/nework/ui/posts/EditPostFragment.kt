@@ -77,9 +77,9 @@ class EditPostFragment : Fragment() {
     private val editPostViewModel: EditPostViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
 
-    private lateinit var usersAdapter: UserAdapter
+    private var usersAdapter: UserAdapter? = null
 
-    private lateinit var imageProvider: ImageProvider
+    private var imageProvider: ImageProvider? = null
 
     private val pickPhotoLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -132,7 +132,7 @@ class EditPostFragment : Fragment() {
         user?.let { setupUserData(user) }
         binding.usersContainer.visibility = View.GONE
         usersViewModel.users.observe(viewLifecycleOwner) {
-            usersAdapter.submitList(usersViewModel.users.value)
+            usersAdapter?.submitList(usersViewModel.users.value)
         }
         var editDataSet = false
         editPostViewModel.postRequest.observe(viewLifecycleOwner) { post ->
@@ -270,7 +270,7 @@ class EditPostFragment : Fragment() {
         MapKitFactory.initialize(requireContext())
 
 
-        post.coords?.let { showPointOnMap(coordsToPoint(it), imageProvider) }
+        post.coords?.let { showPointOnMap(coordsToPoint(it), imageProvider!!) }
 
         setCoordsChangedListener(binding.coords)
 
@@ -329,7 +329,7 @@ class EditPostFragment : Fragment() {
                         if (checkCoords()) {
                             val coordsList = s.split(", ")
                             val coordinates = Coordinates(coordsList[0], coordsList[1])
-                            showPointOnMap(coordsToPoint(coordinates), imageProvider)
+                            showPointOnMap(coordsToPoint(coordinates), imageProvider!!)
                         }
                     } else {
                         removePointFromMap()
@@ -558,9 +558,10 @@ class EditPostFragment : Fragment() {
         editPostViewModel.savePost()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         editPostViewModel.clear()
+        usersAdapter = null
         _binding = null
     }
 }

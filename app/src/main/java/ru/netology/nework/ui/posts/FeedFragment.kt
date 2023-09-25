@@ -230,6 +230,7 @@ class FeedFragment : Fragment() {
         super.onDestroyView()
         navStateViewModel.navState.value = NavStateViewModel.NavState.FeedFragment
         feedViewModel.resetState()
+        postAdapter = null
         _binding = null
     }
 }

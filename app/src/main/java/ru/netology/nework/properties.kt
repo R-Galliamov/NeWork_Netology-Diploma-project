@@ -1,3 +1,3 @@
 package ru.netology.nework
 
-const val API_MAPS_KEY = "f9614e60-8940-48bf-974e-5a6d869421a9"
+const val API_MAPS_KEY = "c2d93e55-9583-4ac7-abda-6cc478d2bd02"

@@ -53,7 +53,7 @@ class UserPostsFragment : Fragment() {
     @Inject
     lateinit var videoObserver: VideoLifecycleObserver
 
-    private var adapter: PostAdapter? = null
+    private var postAdapter: PostAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -84,7 +84,7 @@ class UserPostsFragment : Fragment() {
             binding.usersContainer.visibility = View.GONE
         }
 
-        adapter = PostAdapter(object : OnPostInteractionListener {
+        postAdapter = PostAdapter(object : OnPostInteractionListener {
             override fun onLike(post: Post) {
                 feedViewModel.onLike(post)
             }
@@ -144,7 +144,7 @@ class UserPostsFragment : Fragment() {
             override fun onAudio(audio: Attachment, postId: Int) {
                 if (URLUtil.isValidUrl(audio.url)) {
                     audioObserver.mediaPlayerDelegate(audio, postId) {
-                        adapter?.notifyDataSetChanged()
+                        postAdapter?.notifyDataSetChanged()
                     }
                 } else {
                     Toast.makeText(
@@ -161,7 +161,7 @@ class UserPostsFragment : Fragment() {
         }, audioObserver, videoObserver)
 
         val recyclerView = binding.recyclerView
-        recyclerView.adapter = adapter
+        recyclerView.adapter = postAdapter
 
         usersViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
@@ -170,7 +170,7 @@ class UserPostsFragment : Fragment() {
         }
 
         feedViewModel.userPosts.observe(viewLifecycleOwner) { posts ->
-            adapter?.submitList(posts)
+            postAdapter?.submitList(posts)
         }
 
         feedViewModel.dataState.observe(viewLifecycleOwner) { state ->
@@ -209,6 +209,7 @@ class UserPostsFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        postAdapter = null
         _binding = null
     }
 }

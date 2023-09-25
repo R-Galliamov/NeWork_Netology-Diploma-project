@@ -236,6 +236,7 @@ class EventsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         navStateViewModel.navState.value = NavStateViewModel.NavState.EventsFragment
+        eventAdapter = null
         _binding = null
     }
 }

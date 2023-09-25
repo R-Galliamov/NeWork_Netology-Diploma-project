@@ -4,9 +4,11 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import ru.netology.nework.auth.AppAuth
+import ru.netology.nework.BuildConfig
 
 fun loggingInterceptor() =
-    HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+    HttpLoggingInterceptor().apply {
+        if (BuildConfig.DEBUG) level = HttpLoggingInterceptor.Level.BODY }
 
 fun authInterceptor(auth: AppAuth) = fun(chain: Interceptor.Chain): Response {
     auth.authStateFlow.value.token?.let { token ->
@@ -15,5 +17,6 @@ fun authInterceptor(auth: AppAuth) = fun(chain: Interceptor.Chain): Response {
             .build()
         return chain.proceed(newRequest)
     }
+
     return chain.proceed(chain.request())
 }

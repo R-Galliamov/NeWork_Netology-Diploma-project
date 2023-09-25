@@ -83,9 +83,9 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
     private val editEventViewModel: EditEventViewModel by activityViewModels()
     private val usersViewModel: UsersViewModel by activityViewModels()
 
-    private lateinit var usersAdapter: UserAdapter
+    private var usersAdapter: UserAdapter? = null
 
-    private lateinit var imageProvider: com.yandex.runtime.image.ImageProvider
+    private var imageProvider: com.yandex.runtime.image.ImageProvider? = null
 
     private val pickPhotoLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -138,7 +138,7 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
         user?.let { setupUserData(user) }
         binding.usersContainer.visibility = View.GONE
         usersViewModel.users.observe(viewLifecycleOwner) {
-            usersAdapter.submitList(usersViewModel.users.value)
+            usersAdapter?.submitList(usersViewModel.users.value)
         }
         var editDataSet = false
         editEventViewModel.eventRequest.observe(viewLifecycleOwner) { event ->
@@ -201,8 +201,7 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
         binding.map.visibility = View.VISIBLE
         MapKitFactory.initialize(requireContext())
 
-
-        event.coords?.let { showPointOnMap(coordsToPoint(it), imageProvider) }
+        event.coords?.let { showPointOnMap(coordsToPoint(it), imageProvider!!) }
 
         setCoordsChangedListener(binding.coords)
 
@@ -261,7 +260,7 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
                         if (checkCoords()) {
                             val coordsList = s.split(", ")
                             val coordinates = Coordinates(coordsList[0], coordsList[1])
-                            showPointOnMap(coordsToPoint(coordinates), imageProvider)
+                            showPointOnMap(coordsToPoint(coordinates), imageProvider!!)
                         }
                     } else {
                         removePointFromMap()
@@ -353,6 +352,7 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
             localFile.outputStream().use { outputStream ->
                 inputStream?.copyTo(outputStream)
             }
+
             val preparedAudio = Attachment(localFile.absolutePath, Attachment.Type.AUDIO)
             audioObserver.mediaPlayerDelegate(preparedAudio) {
                 updateAudioPlayerUI()
@@ -632,9 +632,10 @@ class EditEventFragment : Fragment(), DatePickerDialog.OnDateSetListener,
         editEventViewModel.saveEvent()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         editEventViewModel.clear()
+        usersAdapter = null
         _binding = null
     }
 
