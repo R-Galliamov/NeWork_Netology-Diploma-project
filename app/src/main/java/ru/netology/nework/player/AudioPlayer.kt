@@ -1,7 +1,5 @@
 package ru.netology.nework.player
 
-import ru.netology.nework.dto.Attachment
-
 interface AudioPlayer {
     fun isAudioPlaying(): Boolean
     fun getCurrentPosition(): Int

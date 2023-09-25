@@ -96,7 +96,7 @@ class HolderFragment : Fragment() {
 
         //badge = BadgeDrawable.create(requireContext())
         //badge.number = 10
-        //BadgeUtils.attachBadgeDrawable(badge, binding.toolbar, R.id.notification_badge)
+        //BadgeUtils.attachBadgeDrawable(badge, binding.toolbar, R.id.notification)
 
         childFragmentManager.beginTransaction()
             .replace(R.id.place_holder, navStateViewModel.getFragment()).commit()
