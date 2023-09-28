@@ -14,3 +14,6 @@ NeWork - социальная сеть для профессионалов. Эт
 Приложение обеспечивает пользователей инструментами для создания и поддержания профессиональных связей, обмена информацией о своей деятельности и участия в профессиональных событиях.
 
 **Используемые технологии:** MVVM, Room, Retrofit, OkHttp3, Dagger Hilt, Navigation, Glide, Yandex Mapkit, ExoPlayer.
+
+<img src="NeWorkScreenshots/Screenshot_1.png" alt="Alt Text" width="216" height="480">  <img src="NeWorkScreenshots/Screenshot_2.png" alt="Alt Text" width="216" height="480">  <img src="NeWorkScreenshots/Screenshot_3.png" alt="Alt Text" width="216" height="480">  
+<img src="NeWorkScreenshots/Screenshot_4.png" alt="Alt Text" width="216" height="480">  <img src="NeWorkScreenshots/Screenshot_5.png" alt="Alt Text" width="216" height="480">  <img src="NeWorkScreenshots/Screenshot_6.png" alt="Alt Text" width="216" height="480">
