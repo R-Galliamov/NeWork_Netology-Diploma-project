@@ -1,19 +1,19 @@
-# NeWork
+**NeWork — A Social Network for Professionals**
 
-NeWork - социальная сеть для профессионалов. Это приложение, разработанное в рамках дипломного проекта. Основная идея приложения заключается в создании среды, напоминающей формат LinkedIn, где пользователи могут делиться своими профессиональными достижениями, создавать посты с медиаресурсами и геометками, а также устанавливать и поддерживать социальные связи.
-Основные функции приложения:
-  1.	**Регистрация и аутентификация:** Пользователи могут создать аккаунт и войти в систему с помощью учетных данных.
-  2.	**CRUD для сущностей:**  
-    •	Посты: Пользователи могут создавать посты, добавлять к ним медиаресурсы (изображения, видео, аудио), геометки и ссылки на внешние ресурсы. Могут также указывать упоминания других пользователей.    
-    •	События: Пользователи могут создавать и просматривать события, отмечать свое участие в них.    
-    •	Работы: Пользователи могут создавать и редактировать записи о своих профессиональной деятельности, указывать место работы, должность и период занятости.  
-  4.	**Проигрывание медиаресурсов:** Пользователи могут просматривать изображения, воспроизводить аудио и видеоматериалы, прикрепленные к постам и профилям.
-  5.	**Внешние  ссылки:**  Если в постах есть ссылки на внешние ресурсы, пользователи могут переходить по ним.
-  6.	**Динамическая лента событий и постов:** Пользователи могут просматривать обновляемую в реальном времени ленту событий и постов, а также переходить на стену других пользователей и просматривать добавленный ими         контент.
-  7.	**Интеграция карт:** поддерживаются интерактивные карты, позволяющие пользователям устанавливать метки и отмечать важные места и события. 
-Приложение обеспечивает пользователей инструментами для создания и поддержания профессиональных связей, обмена информацией о своей деятельности и участия в профессиональных событиях.
+A diploma project created as part of a course to practice Android application development skills. The main goal was to create a platform where users can share professional achievements, establish social connections, and exchange media content.
 
-**Используемые технологии:** MVVM, Room, Retrofit, OkHttp3, Dagger Hilt, Navigation, Glide, Yandex Mapkit, ExoPlayer.
+**My Tasks and Contribution**
+* Full application development: from design to implementation of all features.
+* UI/UX work (main focus — ease of interaction with the post feed, maps, and media content).
+* Integration of external services (maps, media).
+* Ensuring proper functioning of CRUD operations for posts, events, and user profiles.
+
+**Key Technologies**
+MVVM, Room, Retrofit, OkHttp3, Dagger Hilt, Navigation, Glide, Yandex Mapkit, ExoPlayer.
+
+**Challenges and Conclusions**
+* Main challenge: bringing together all key modules and services.
+* This project allowed me to refine basic Android development skills, learn to design architecture, and optimize data handling.
 
 <img src="NeWorkScreenshots/Screenshot_1.png" alt="Alt Text" width="216" height="480">  <img src="NeWorkScreenshots/Screenshot_2.png" alt="Alt Text" width="216" height="480">  <img src="NeWorkScreenshots/Screenshot_3.png" alt="Alt Text" width="216" height="480">  
 <img src="NeWorkScreenshots/Screenshot_4.png" alt="Alt Text" width="216" height="480">  <img src="NeWorkScreenshots/Screenshot_5.png" alt="Alt Text" width="216" height="480">  <img src="NeWorkScreenshots/Screenshot_6.png" alt="Alt Text" width="216" height="480">
