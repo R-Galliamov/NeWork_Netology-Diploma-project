@@ -1,4 +1,5 @@
-**NeWork — A Social Network for Professionals**
+# NeWork
+### A Social Network for Professionals
 
 A diploma project created to practice Android application development skills. The main goal was to create a platform where users can share professional achievements, establish social connections, and exchange media content.
 
